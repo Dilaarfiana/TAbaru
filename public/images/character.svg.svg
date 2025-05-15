@@ -1,0 +1,32 @@
+<svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Kepala -->
+  <circle cx="150" cy="100" r="50" fill="#FFD8B9" />
+  
+  <!-- Mata -->
+  <circle cx="130" cy="90" r="5" fill="#333" />
+  <circle cx="170" cy="90" r="5" fill="#333" />
+  
+  <!-- Mulut -->
+  <path d="M130 120 Q150 140 170 120" stroke="#333" stroke-width="3" fill="none" />
+  
+  <!-- Rambut -->
+  <path d="M100 70 Q150 40 200 70 V100 Q150 120 100 100 Z" fill="#333" />
+  
+  <!-- Tubuh -->
+  <path d="M110 150 L100 300 L200 300 L190 150 Z" fill="#20C997" />
+  
+  <!-- Cape superhero -->
+  <path d="M110 150 L70 280 L95 290 L110 150 Z" fill="#20C997" />
+  <path d="M190 150 L230 280 L205 290 L190 150 Z" fill="#20C997" />
+  
+  <!-- Lengan -->
+  <path d="M110 150 L70 200 L80 230 L120 180 Z" fill="#FFD8B9" />
+  <path d="M190 150 L220 210 L200 220 L180 180 Z" fill="#FFD8B9" />
+  
+  <!-- Kaki -->
+  <path d="M120 300 L110 380 L140 380 L140 300 Z" fill="#333" />
+  <path d="M160 300 L160 380 L190 380 L180 300 Z" fill="#333" />
+  
+  <!-- Sabuk -->
+  <rect x="100" y="230" width="100" height="10" fill="#333" />
+</svg>
