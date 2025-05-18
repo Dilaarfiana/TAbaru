@@ -60,8 +60,8 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-sm text-blue-700">
-                            ID siswa menggunakan format: <span class="font-mono font-medium">6 + Kode Jurusan + Tahun Masuk + Nomor Urut (001)</span> misalnya:
-                            <code class="bg-blue-100 px-1 py-0.5 rounded">6A25001</code> untuk siswa jurusan A, tahun masuk 2025, nomor urut 001.
+                            ID siswa menggunakan format: <span class="font-mono font-medium">6 + Tahun Masuk + Nomor Urut (001)</span> misalnya:
+                            <code class="bg-blue-100 px-1 py-0.5 rounded">625001</code> untuk siswa tahun masuk 2025, nomor urut 001.
                         </p>
                     </div>
                 </div>
@@ -155,7 +155,7 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
                                 <tr>
-                                    <td class="px-3 py-2 text-xs text-gray-500">6A25001</td>
+                                    <td class="px-3 py-2 text-xs text-gray-500">625001</td>
                                     <td class="px-3 py-2 text-xs text-gray-500">Contoh Nama</td>
                                     <td class="px-3 py-2 text-xs text-gray-500">Jakarta</td>
                                     <td class="px-3 py-2 text-xs text-gray-500">01-01-2010</td>
@@ -187,7 +187,7 @@
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-yellow-800">Panduan Penting</h3>
                             <ul class="mt-1 text-sm text-yellow-700 list-disc list-inside">
-                                <li>Pastikan ID siswa mengikuti format <span class="font-mono">6 + Kode Jurusan + Tahun + Nomor Urut</span></li>
+                                <li>Pastikan ID siswa mengikuti format <span class="font-mono">6 + Tahun + Nomor Urut</span></li>
                                 <li>Format tanggal: DD-MM-YYYY (misalnya 01-01-2025)</li>
                                 <li>Jenis kelamin: L (laki-laki) atau P (perempuan)</li>
                                 <li>Status aktif: 1 (aktif) atau 0 (tidak aktif)</li>

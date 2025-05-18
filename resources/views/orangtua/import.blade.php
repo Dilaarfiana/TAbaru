@@ -131,7 +131,7 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200 bg-white">
                                 <tr>
-                                    <td class="px-3 py-2 text-xs text-gray-500">1</td>
+                                    <td class="px-3 py-2 text-xs text-gray-500">6A25001</td>
                                     <td class="px-3 py-2 text-xs text-gray-500">Budi Santoso</td>
                                     <td class="px-3 py-2 text-xs text-gray-500">Siti Aisyah</td>
                                     <td class="px-3 py-2 text-xs text-gray-500">08123456789</td>
@@ -141,7 +141,10 @@
                         </table>
                     </div>
                     <div class="mt-3 ml-7">
-                        <a href="{{ route('orangtua.template') }}" class="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                        <p class="text-xs text-gray-500 mb-2">
+                            <span class="font-semibold">Catatan Format ID Siswa:</span> Gunakan format ID siswa yang sesuai (contoh: 625001 untuk siswa baru atau 6A25001 untuk siswa yang sudah dialokasikan)
+                        </p>
+                            <a href="{{ route('orangtua.template') }}" class="inline-flex items-center text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>

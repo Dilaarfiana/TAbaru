@@ -13,6 +13,7 @@ use App\Http\Controllers\RekamMedisController;
 use App\Http\Controllers\PemeriksaanAwalController;
 use App\Http\Controllers\PemeriksaanFisikController;
 use App\Http\Controllers\AlokasiController;
+use Illuminate\Http\Request;
 
 // Redirect dari halaman utama ke dashboard
 Route::get('/', function () {
@@ -22,14 +23,19 @@ Route::get('/', function () {
 // Dashboard Route
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-// Siswa Route
+// Siswa Routes
 Route::prefix('siswa')->name('siswa.')->group(function () {
     Route::get('import', [SiswaController::class, 'importForm'])->name('import');
-    Route::post('import', [SiswaController::class, 'import'])->name('import.process');
-    Route::get('template', [SiswaController::class, 'template'])->name('template');
+    Route::post('import', [SiswaController::class, 'importProcess'])->name('import.process');
     Route::get('export', [SiswaController::class, 'export'])->name('export');
+    Route::get('template', [SiswaController::class, 'downloadTemplate'])->name('template');
+    Route::post('alokasi', [SiswaController::class, 'allocateSiswa'])->name('alokasi');
 });
 Route::resource('siswa', SiswaController::class);
+
+// API Routes untuk Alokasi
+Route::get('api/jurusan', [SiswaController::class, 'getJurusan'])->name('api.jurusan');
+Route::get('api/kelas', [SiswaController::class, 'getKelasByJurusan'])->name('api.kelas');
 
 // Alokasi routes
 Route::resource('alokasi', AlokasiController::class);
@@ -41,6 +47,7 @@ Route::prefix('orangtua')->name('orangtua.')->group(function () {
     Route::get('import', [OrangTuaController::class, 'importForm'])->name('import');
     Route::post('import', [OrangTuaController::class, 'import'])->name('import.process');
     Route::get('template', [OrangTuaController::class, 'template'])->name('template');
+    Route::get('download-template', [OrangTuaController::class, 'template'])->name('downloadTemplate'); // Ruta adicional
     Route::get('export', [OrangTuaController::class, 'export'])->name('export');
 });
 Route::resource('orangtua', OrangTuaController::class);
@@ -64,6 +71,10 @@ Route::resource('petugasuks', PetugasUKSController::class);
 
 // Detail Siswa Route
 Route::resource('detailsiswa', DetailSiswaController::class)->except(['create', 'store']);
+// Tambahkan route untuk cleanup
+Route::get('detailsiswa/cleanup', [DetailSiswaController::class, 'cleanup'])->name('detailsiswa.cleanup');
+// Tambahkan route untuk cleanupDuplicates
+Route::get('detailsiswa/cleanup-duplicates', [DetailSiswaController::class, 'cleanupDuplicates'])->name('detailsiswa.cleanup-duplicates');
 
 // Rekam Medis Route - Fixed to use underscore instead of hyphen
 Route::prefix('rekam_medis')->name('rekam_medis.')->group(function () {

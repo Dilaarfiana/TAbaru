@@ -50,7 +50,8 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-sm text-blue-700">
-                            ID Siswa akan dibuat otomatis dengan format <span class="font-mono">SI001, SI002</span> dst.
+                            ID Siswa akan dibuat otomatis dengan format <span class="font-mono">6 + tahun (yy) + nomor urut (001)</span>.
+                            Setelah dialokasikan ke jurusan, ID akan berubah menjadi <span class="font-mono">6 + kode jurusan + tahun (yy) + nomor urut (001)</span>.
                             Pastikan mengisi nama siswa dengan lengkap sesuai dokumen resmi.
                             Data yang wajib diisi ditandai dengan <span class="text-red-500">*</span>.
                         </p>
@@ -82,7 +83,7 @@
                                 readonly disabled>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">
-                            ID akan dibuat otomatis dengan format SI001
+                            ID dibuat otomatis dengan format: 6 + tahun (yy) + nomor urut (001)
                         </p>
                     </div>
                     
@@ -289,7 +290,8 @@
                     <div>
                         <h3 class="font-bold text-base mb-2">Tips Pengisian Form Siswa</h3>
                         <ul class="list-disc list-inside text-sm space-y-2 ml-2">
-                            <li>ID Siswa akan terisi otomatis dengan format SI001, SI002, dst.</li>
+                            <li>ID Siswa akan terisi otomatis dengan format 6 + tahun (yy) + nomor urut (001).</li>
+                            <li>Setelah dialokasikan ke jurusan, ID akan berubah menjadi 6 + kode jurusan + tahun (yy) + nomor urut (001).</li>
                             <li>Nama Siswa sebaiknya diisi dengan nama lengkap sesuai dokumen resmi.</li>
                             <li>Tanggal Lahir membantu dalam perhitungan usia dan administrasi lainnya.</li>
                             <li>Tanggal Masuk menunjukkan kapan siswa mulai terdaftar di sekolah.</li>

@@ -7,10 +7,14 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SiswaExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+class SiswaExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithChunkReading
 {
+    use Exportable;
+    
     protected $siswas;
     
     public function __construct($siswas = null)
@@ -51,6 +55,15 @@ class SiswaExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     
     public function styles(Worksheet $sheet)
     {
+        // Mengatur lebar kolom agar lebih baik
+        $sheet->getColumnDimension('A')->setWidth(15); // ID Siswa
+        $sheet->getColumnDimension('B')->setWidth(35); // Nama Siswa
+        $sheet->getColumnDimension('C')->setWidth(15); // Jenis Kelamin
+        $sheet->getColumnDimension('D')->setWidth(20); // Tempat Lahir
+        $sheet->getColumnDimension('E')->setWidth(15); // Tanggal Lahir
+        $sheet->getColumnDimension('F')->setWidth(15); // Tanggal Masuk
+        $sheet->getColumnDimension('G')->setWidth(15); // Status
+        
         return [
             // Style header (baris pertama)
             1 => [
@@ -61,11 +74,14 @@ class SiswaExport implements FromCollection, WithHeadings, WithMapping, WithStyl
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                     'startColor' => ['rgb' => '4299E1'] // Warna biru
+                ],
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
                 ]
             ],
-                        
+            
             // Style untuk semua sel
-            'A1:G100' => [
+            'A1:G' . ($this->siswas->count() + 1) => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -74,5 +90,11 @@ class SiswaExport implements FromCollection, WithHeadings, WithMapping, WithStyl
                 ],
             ],
         ];
+    }
+    
+    // Untuk mengurangi penggunaan memory, tambahkan proses chunking
+    public function chunkSize(): int
+    {
+        return 1000; // Export per 1000 data
     }
 }

@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Validators\Failure;
 use Throwable;
 
@@ -19,7 +20,8 @@ class OrangTuaImport implements
     WithValidation, 
     SkipsOnError, 
     SkipsOnFailure,
-    SkipsEmptyRows
+    SkipsEmptyRows,
+    WithChunkReading
 {
     private $rowCount = 0;
     private $updateCount = 0;
@@ -45,9 +47,11 @@ class OrangTuaImport implements
             // Update existing data
             $existingOrangTua->update([
                 'nama_ayah' => $row['nama_ayah'],
+                'pekerjaan_ayah' => $row['pekerjaan_ayah'] ?? $existingOrangTua->pekerjaan_ayah,
                 'nama_ibu' => $row['nama_ibu'],
-                'no_telp' => $row['no_telp'],
+                'pekerjaan_ibu' => $row['pekerjaan_ibu'] ?? $existingOrangTua->pekerjaan_ibu,
                 'alamat' => $row['alamat'],
+                'no_telp' => $row['no_hp'] ?? $row['no_telp'] ?? $existingOrangTua->no_telp,
             ]);
             $this->updateCount++;
             return null;
@@ -57,10 +61,12 @@ class OrangTuaImport implements
         $this->rowCount++;
         return new OrangTua([
             'id_siswa' => $row['id_siswa'],
-            'nama_ayah' => $row['nama_ayah'], 
+            'nama_ayah' => $row['nama_ayah'],
+            'pekerjaan_ayah' => $row['pekerjaan_ayah'] ?? null,
             'nama_ibu' => $row['nama_ibu'],
-            'no_telp' => $row['no_telp'],
+            'pekerjaan_ibu' => $row['pekerjaan_ibu'] ?? null,
             'alamat' => $row['alamat'],
+            'no_telp' => $row['no_hp'] ?? $row['no_telp'] ?? null,
         ]);
     }
     
@@ -70,11 +76,14 @@ class OrangTuaImport implements
     public function rules(): array
     {
         return [
-            'id_siswa' => 'required|integer',
+            'id_siswa' => 'required|exists:siswas,id_siswa',
             'nama_ayah' => 'required|string|max:100',
             'nama_ibu' => 'required|string|max:100',
-            'no_telp' => 'required|string|max:15',
+            '*.no_hp' => 'nullable|string|max:15',
+            '*.no_telp' => 'nullable|string|max:15',
             'alamat' => 'required|string',
+            'pekerjaan_ayah' => 'nullable|string|max:100',
+            'pekerjaan_ibu' => 'nullable|string|max:100',
         ];
     }
     
@@ -85,14 +94,16 @@ class OrangTuaImport implements
     {
         return [
             'id_siswa.required' => 'ID Siswa tidak boleh kosong',
-            'id_siswa.integer' => 'ID Siswa harus berupa angka',
+            'id_siswa.exists' => 'ID Siswa tidak terdaftar dalam sistem',
             'nama_ayah.required' => 'Nama Ayah harus diisi',
             'nama_ayah.max' => 'Nama Ayah maksimal 100 karakter',
             'nama_ibu.required' => 'Nama Ibu harus diisi',
             'nama_ibu.max' => 'Nama Ibu maksimal 100 karakter',
-            'no_telp.required' => 'Nomor Telepon harus diisi',
-            'no_telp.max' => 'Nomor Telepon maksimal 15 karakter',
+            '*.no_hp.max' => 'Nomor HP maksimal 15 karakter',
+            '*.no_telp.max' => 'Nomor Telepon maksimal 15 karakter',
             'alamat.required' => 'Alamat harus diisi',
+            'pekerjaan_ayah.max' => 'Pekerjaan Ayah maksimal 100 karakter',
+            'pekerjaan_ibu.max' => 'Pekerjaan Ibu maksimal 100 karakter',
         ];
     }
     
@@ -145,5 +156,13 @@ class OrangTuaImport implements
     public function getErrors()
     {
         return $this->errors;
+    }
+    
+    /**
+     * @return int
+     */
+    public function chunkSize(): int
+    {
+        return 50;
     }
 }

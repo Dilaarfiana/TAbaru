@@ -3,13 +3,15 @@
 namespace App\Imports;
 
 use App\Models\Siswa;
+use App\Models\DetailSiswa;
+use App\Models\Kelas;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Maatwebsite\Excel\Concerns\WithBatchInserts;
+// WithBatchInserts dihapus
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Validators\Failure;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
@@ -19,18 +21,31 @@ use PhpOffice\PhpSpreadsheet\Cell\Cell;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class SiswaImport extends DefaultValueBinder implements 
     ToModel, 
     WithHeadingRow, 
     WithValidation, 
     SkipsOnFailure, 
-    WithBatchInserts, 
+    // WithBatchInserts dihapus
     WithChunkReading,
     SkipsEmptyRows,
     WithCustomValueBinder
 {
     use Importable, SkipsFailures;
+    
+    // Menambahkan properti untuk menyimpan jumlah siswa yang berhasil diimport
+    private $importedCount = 0;
+    
+    /**
+     * Get the count of imported records
+     */
+    public function getImportedCount()
+    {
+        return $this->importedCount;
+    }
 
     /**
      * Pastikan cell ID siswa dibaca sebagai string
@@ -47,11 +62,7 @@ class SiswaImport extends DefaultValueBinder implements
     }
 
     /**
-     * Prepare row data before validation
-     *
-     * @param array $row
-     * @param int $index
-     * @return array
+     * Normalize column names and prepare data
      */
     public function prepareForValidation($row, $index)
     {
@@ -70,7 +81,16 @@ class SiswaImport extends DefaultValueBinder implements
         // Jika row kosong, tambahkan log
         if ($isEmpty) {
             Log::warning("Empty row detected at index {$index}");
+            return []; // Return empty array to be skipped
         }
+
+        // Normalize column names (lowercase and trim)
+        $normalizedRow = [];
+        foreach ($row as $key => $value) {
+            $normalizedKey = strtolower(trim($key));
+            $normalizedRow[$normalizedKey] = $value;
+        }
+        $row = $normalizedRow;
 
         // Pastikan nama_siswa selalu ada untuk validasi
         if (!isset($row['nama_siswa'])) {
@@ -85,36 +105,27 @@ class SiswaImport extends DefaultValueBinder implements
             // Debug original ID
             Log::debug("Original ID Siswa: '{$idSiswa}' (Type: " . gettype($row['id_siswa']) . ", Length: " . strlen($idSiswa) . ")");
             
-            // Format yang diharapkan untuk import: 6 + Tahun (2 digit) + Nomor Urut (3 digit)
-            // Contoh: 625001
-            
-            // Periksa apakah format tidak sesuai dengan 6YYNNN
-            if (!preg_match('/^6\d{5}$/', $idSiswa)) {
-                // Ambil tahun dari tanggal masuk jika ada, atau gunakan tahun saat ini
-                $tahun = '';
-                if (!empty($row['tanggal_masuk'])) {
-                    try {
-                        $tahun = Carbon::parse($row['tanggal_masuk'])->format('y');
-                    } catch (\Exception $e) {
-                        $tahun = date('y');
-                    }
-                } else {
-                    $tahun = date('y');
+            // Cek apakah ID memiliki format dengan kode jurusan
+            if (preg_match('/^6([A-Z]+)(\d{2})(\d{3})$/', $idSiswa, $matches)) {
+                // Sudah format dengan jurusan, validasi kode_jurusan jika ada
+                $kodeJurusanDariId = $matches[1];
+                
+                if (!empty($row['kode_jurusan']) && $row['kode_jurusan'] !== $kodeJurusanDariId) {
+                    Log::warning("Kode jurusan di ID ({$kodeJurusanDariId}) berbeda dengan di kolom kode_jurusan ({$row['kode_jurusan']}). Menggunakan kode dari ID.");
                 }
                 
-                // Ekstrak nomor urut jika ada
-                if (preg_match('/(\d{3})$/', $idSiswa, $matches)) {
-                    $urut = $matches[1];
-                } else {
-                    // Jika tidak bisa extract nomor urut, gunakan default
-                    $urut = '001';
-                }
-                
-                // Buat ID yang benar dengan format 6 + Tahun + Nomor Urut
-                $idBenar = "6{$tahun}{$urut}";
-                
-                Log::info("Reformatted ID Siswa from '{$idSiswa}' to '{$idBenar}'");
-                $row['id_siswa'] = $idBenar;
+                // Set kode_jurusan sesuai dengan ID
+                $row['kode_jurusan'] = $kodeJurusanDariId;
+            }
+            // Format tanpa kode jurusan, tapi dengan struktur yang benar
+            elseif (preg_match('/^6(\d{5})$/', $idSiswa)) {
+                // Format 6 + tahun + nomor urut, tidak ada kode jurusan
+                Log::info("ID tanpa kode jurusan: {$idSiswa}");
+            }
+            // Format yang salah, perlu regenerasi
+            else {
+                Log::warning("Format ID tidak valid: {$idSiswa}. Akan digenerate otomatis.");
+                $row['id_siswa'] = null; // Set null untuk digenerate nanti
             }
         }
 
@@ -187,36 +198,125 @@ class SiswaImport extends DefaultValueBinder implements
             }
         }
         
-        // Jika id_siswa tidak diisi, generate ID otomatis menggunakan method di model Siswa
+        // Menangani ID siswa dan alokasi jurusan
         $idSiswa = null;
-        if (!empty($row['id_siswa'])) {
-            $idSiswa = $row['id_siswa'];
-            
-            // Final check untuk format ID
-            if (!preg_match('/^6\d{5}$/', $idSiswa)) {
-                // Generate ID otomatis jika format masih tidak sesuai
-                $idSiswa = Siswa::generateGenericId($tanggalMasuk);
-                Log::info("Generated new ID: {$idSiswa} to replace invalid ID: {$row['id_siswa']}");
-            }
-        } else {
-            // Generate ID otomatis jika tidak ada
-            $idSiswa = Siswa::generateGenericId($tanggalMasuk);
-            Log::info("Generated new ID: {$idSiswa} for row without ID");
-        }
+        $kodeJurusan = isset($row['kode_jurusan']) ? $row['kode_jurusan'] : null;
+        $kodeKelas = isset($row['kode_kelas']) ? $row['kode_kelas'] : null;
         
         try {
-            return new Siswa([
-                'id_siswa'     => $idSiswa,
-                'nama_siswa'   => $row['nama_siswa'],
-                'tempat_lahir' => $row['tempat_lahir'] ?? null,
-                'tanggal_lahir' => $tanggalLahir,
-                'jenis_kelamin' => $jenisKelamin,
-                'tanggal_masuk' => $tanggalMasuk,
-                'status_aktif'  => $statusAktif,
-            ]);
+            // Mulai transaction database
+            DB::beginTransaction();
+            
+            // PERUBAHAN: Preferably let's use empty ID and generate a new one
+            if (empty($row['id_siswa'])) {
+                // Generate ID otomatis jika tidak ada
+                $idSiswa = empty($kodeJurusan) 
+                    ? Siswa::generateNextId() 
+                    : Siswa::generateIdForJurusan($kodeJurusan);
+                    
+                Log::info("Generated new ID: {$idSiswa} for row without ID");
+            } else {
+                // Jika ID diisi, cek duplikasi
+                $idSiswa = $row['id_siswa'];
+                
+                // Cek apakah ID sudah ada di database
+                $existingSiswa = Siswa::where('id_siswa', $idSiswa)->first();
+                if ($existingSiswa) {
+                    // Generate ID baru jika duplikat
+                    $idSiswa = empty($kodeJurusan) 
+                        ? Siswa::generateNextId() 
+                        : Siswa::generateIdForJurusan($kodeJurusan);
+                    
+                    Log::warning("ID Siswa already exists: {$row['id_siswa']}, generating new ID: {$idSiswa}");
+                }
+            }
+            
+            // Simpan data siswa menggunakan updateOrCreate untuk menghindari duplikasi
+            $siswa = Siswa::updateOrCreate(
+                ['id_siswa' => $idSiswa],
+                [
+                    'nama_siswa'   => $row['nama_siswa'],
+                    'tempat_lahir' => $row['tempat_lahir'] ?? null,
+                    'tanggal_lahir' => $tanggalLahir,
+                    'jenis_kelamin' => $jenisKelamin,
+                    'tanggal_masuk' => $tanggalMasuk,
+                    'status_aktif'  => $statusAktif,
+                ]
+            );
+            
+            // Increment counter dan log
+            $this->importedCount++;
+            Log::info("Successfully imported student: {$idSiswa} - {$row['nama_siswa']}");
+            
+            // Jika ada kode jurusan, buat atau update DetailSiswa
+            if (!empty($kodeJurusan)) {
+                // Cek apakah DetailSiswa sudah ada
+                $detailSiswa = DetailSiswa::where('id_siswa', $idSiswa)->first();
+                
+                if ($detailSiswa) {
+                    // Update detail yang sudah ada
+                    $detailSiswa->kode_jurusan = $kodeJurusan;
+                    if (!empty($kodeKelas)) {
+                        $detailSiswa->kode_kelas = $kodeKelas;
+                    }
+                    $detailSiswa->save();
+                    
+                    Log::info("Updated DetailSiswa for {$idSiswa} with jurusan: {$kodeJurusan}");
+                } else {
+                    // Generate ID DetailSiswa baru
+                    $lastDetailSiswa = DetailSiswa::orderBy('id_detsiswa', 'desc')->first();
+                    $nextNumber = 1;
+                    
+                    if ($lastDetailSiswa) {
+                        preg_match('/DS(\d+)/', $lastDetailSiswa->id_detsiswa, $matches);
+                        if (isset($matches[1])) {
+                            $nextNumber = (int)$matches[1] + 1;
+                        }
+                    }
+                    
+                    $idDetailSiswa = 'DS' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+                    
+                    // Buat detail baru
+                    $detailData = [
+                        'id_detsiswa' => $idDetailSiswa,
+                        'id_siswa' => $idSiswa,
+                        'kode_jurusan' => $kodeJurusan
+                    ];
+                    
+                    if (!empty($kodeKelas)) {
+                        $detailData['kode_kelas'] = $kodeKelas;
+                    }
+                    
+                    DetailSiswa::create($detailData);
+                    
+                    Log::info("Created DetailSiswa for {$idSiswa} with jurusan: {$kodeJurusan}");
+                }
+                
+                // Update jumlah siswa di kelas jika ada
+                if (!empty($kodeKelas)) {
+                    $kelasBaru = Kelas::find($kodeKelas);
+                    if ($kelasBaru) {
+                        $jumlahSiswaBaru = DetailSiswa::where('kode_kelas', $kodeKelas)->count();
+                        $kelasBaru->update(['jumlah_siswa' => $jumlahSiswaBaru]);
+                        
+                        Log::info("Updated jumlah siswa in kelas {$kodeKelas}: {$jumlahSiswaBaru}");
+                    }
+                }
+            }
+            
+            // Commit transaction
+            DB::commit();
+            
+            return $siswa;
+            
         } catch (\Exception $e) {
+            // Rollback transaction jika terjadi error
+            DB::rollBack();
+            
             Log::error("Error creating Siswa from row: " . json_encode($row) . " | Error: " . $e->getMessage());
-            return null;
+            
+            // Throw exception agar row ini discarded dan import tetap berjalan untuk row lain
+            throw new \Exception("Failed to import row: " . $e->getMessage());
         }
     }
     
@@ -226,19 +326,15 @@ class SiswaImport extends DefaultValueBinder implements
     public function rules(): array
     {
         return [
-            'id_siswa' => [
-                'nullable',
-                'unique:siswas,id_siswa',
-                // Format yang diharapkan: 6 + Tahun (2 digit) + Nomor Urut (3 digit)
-                // Contoh: 625001
-                'regex:/^6\d{5}$/'
-            ],
             'nama_siswa' => 'required|string|max:100',
             'tempat_lahir' => 'nullable|string|max:50',
             'tanggal_lahir' => 'nullable',
             'jenis_kelamin' => 'nullable|string|max:1',
             'tanggal_masuk' => 'nullable',
             'status_aktif' => 'nullable',
+            // Kolom tambahan untuk detail siswa
+            'kode_jurusan' => 'nullable|string',
+            'kode_kelas' => 'nullable|string',
         ];
     }
     
@@ -248,8 +344,6 @@ class SiswaImport extends DefaultValueBinder implements
     public function customValidationMessages()
     {
         return [
-            'id_siswa.unique' => 'ID Siswa sudah digunakan',
-            'id_siswa.regex' => 'Format ID Siswa tidak valid. Format yang benar: 6 + Tahun (2 digit) + Nomor Urut (3 digit). Contoh: 625001',
             'nama_siswa.required' => 'Nama Siswa wajib diisi',
             'nama_siswa.max' => 'Nama Siswa maksimal 100 karakter',
             'tempat_lahir.max' => 'Tempat Lahir maksimal 50 karakter',
@@ -274,16 +368,8 @@ class SiswaImport extends DefaultValueBinder implements
     /**
      * @return int
      */
-    public function batchSize(): int
-    {
-        return 100; // Jumlah record per batch insert
-    }
-
-    /**
-     * @return int
-     */
     public function chunkSize(): int
     {
-        return 100; // Jumlah record per chunk reading
+        return 50; // Jumlah record per chunk reading
     }
 }

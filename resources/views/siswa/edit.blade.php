@@ -51,6 +51,27 @@
                     <div class="ml-3">
                         <p class="text-sm text-blue-700">
                             Anda sedang mengubah data siswa dengan ID <span class="font-mono font-medium">{{ $siswa->id_siswa }}</span>. 
+                            @php
+                                // Cek apakah ID sesuai format baru
+                                $idFormat = '';
+                                if (strlen($siswa->id_siswa) >= 6) {
+                                    if (substr($siswa->id_siswa, 0, 1) == '6') {
+                                        if ($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan) {
+                                            $idFormat = 'Sudah dialokasi ke jurusan';
+                                        } else {
+                                            $idFormat = 'Belum dialokasi ke jurusan';
+                                        }
+                                    } else {
+                                        $idFormat = 'Format ID lama';
+                                    }
+                                }
+                            @endphp
+                            @if($idFormat)
+                                <span class="font-medium text-{{ $idFormat == 'Format ID lama' ? 'orange' : ($idFormat == 'Sudah dialokasi ke jurusan' ? 'green' : 'yellow') }}-600">
+                                    ({{ $idFormat }})
+                                </span>
+                            @endif
+                            <br>
                             Pastikan data yang diubah sudah benar sebelum menyimpan.
                             Data yang wajib diisi ditandai dengan <span class="text-red-500">*</span>.
                         </p>
@@ -81,7 +102,15 @@
                                 readonly disabled>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">
-                            ID siswa tidak dapat diubah
+                            @if(substr($siswa->id_siswa, 0, 1) == '6')
+                                @if($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan)
+                                    ID siswa dengan format: 6 + kode jurusan + tahun (yy) + nomor urut (001)
+                                @else
+                                    ID siswa dengan format: 6 + tahun (yy) + nomor urut (001)
+                                @endif
+                            @else
+                                ID siswa dengan format lama. Akan diperbarui saat alokasi.
+                            @endif
                         </p>
                     </div>
                     
@@ -246,6 +275,35 @@
                     </div>
                 </div>
 
+                <!-- Alokasi Button -->
+                @if(substr($siswa->id_siswa, 0, 1) == '6' && (!$siswa->detailSiswa || !$siswa->detailSiswa->kode_jurusan))
+                <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">
+                                Siswa belum dialokasikan ke jurusan
+                            </h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <p>
+                                    Siswa ini belum dialokasikan ke jurusan dan kelas. Alokasikan siswa untuk mengubah ID menjadi format baru sesuai jurusan.
+                                </p>
+                            </div>
+                            <div class="mt-3">
+                                <button type="button" onclick="window.location.href='{{ route('siswa.index') }}#alokasi-{{ $siswa->id_siswa }}'" 
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                                    <i class="fas fa-user-check mr-2"></i> Alokasikan Siswa
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Form Buttons -->
                 <div class="mt-8 flex justify-end space-x-3">
                     <button type="button" onclick="window.location.href='{{ route('siswa.index') }}'" 
@@ -283,6 +341,19 @@
                     <div>
                         <h3 class="font-bold text-base mb-2">Informasi Data Siswa</h3>
                         <ul class="text-sm space-y-2">
+                            <li><span class="font-semibold">ID Siswa:</span> {{ $siswa->id_siswa }}</li>
+                            <li>
+                                <span class="font-semibold">Format ID:</span> 
+                                @if(substr($siswa->id_siswa, 0, 1) == '6')
+                                    @if($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan)
+                                        Format baru (Sudah dialokasi)
+                                    @else
+                                        Format baru (Belum dialokasi)
+                                    @endif
+                                @else
+                                    Format lama
+                                @endif
+                            </li>
                             <li><span class="font-semibold">Dibuat pada:</span> {{ $siswa->dibuat_pada ? date('d/m/Y H:i', strtotime($siswa->dibuat_pada)) : 'Tidak ada data' }}</li>
                             <li><span class="font-semibold">Terakhir diperbarui:</span> {{ $siswa->diperbarui_pada ? date('d/m/Y H:i', strtotime($siswa->diperbarui_pada)) : 'Tidak ada data' }}</li>
                             <li><span class="font-semibold">Perubahan sebelumnya:</span> {{ $siswa->diperbarui_pada && $siswa->diperbarui_pada != $siswa->dibuat_pada ? 'Ya' : 'Belum pernah diubah' }}</li>

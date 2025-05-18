@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class DetailSiswaController extends Controller
@@ -301,6 +302,57 @@ class DetailSiswaController extends Controller
             DB::rollback();
             return redirect()->route('detailsiswa.index')
                 ->with('error', 'Gagal membersihkan data: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Membersihkan data detail siswa yang tidak valid
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function cleanup()
+    {
+        try {
+            // Mulai transaction database
+            DB::beginTransaction();
+            
+            // Cari detail siswa yang tidak memiliki relasi ke siswa yang valid
+            $invalidDetails = DetailSiswa::whereNotIn('id_siswa', function($query) {
+                $query->select('id_siswa')->from('siswas');
+            })->get();
+            
+            $count = $invalidDetails->count();
+            
+            if ($count > 0) {
+                // Log detail yang akan dihapus
+                foreach ($invalidDetails as $detail) {
+                    Log::info('Menghapus detail siswa tidak valid:', [
+                        'id_detsiswa' => $detail->id_detsiswa,
+                        'id_siswa' => $detail->id_siswa
+                    ]);
+                }
+                
+                // Hapus detail yang tidak valid
+                DetailSiswa::whereNotIn('id_siswa', function($query) {
+                    $query->select('id_siswa')->from('siswas');
+                })->delete();
+            }
+            
+            // Commit transaction
+            DB::commit();
+            
+            return redirect()->route('siswa.index')
+                ->with('success', "Pembersihan data selesai. $count data detail siswa yang tidak valid berhasil dihapus.");
+                
+        } catch (\Exception $e) {
+            // Rollback transaction jika terjadi error
+            DB::rollBack();
+            
+            // Log error
+            Log::error('Error saat membersihkan data detail siswa: ' . $e->getMessage());
+            
+            return redirect()->route('siswa.index')
+                ->with('error', 'Terjadi kesalahan saat membersihkan data: ' . $e->getMessage());
         }
     }
     

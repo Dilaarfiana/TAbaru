@@ -9,8 +9,12 @@ use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\OrangTuaImport;
 use App\Exports\OrangTuaExport;
-use App\Exports\OrangTuaTemplateExport;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class OrangTuaController extends Controller
 {
@@ -249,9 +253,117 @@ class OrangTuaController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public function downloadTemplate()
+    public function template()
     {
-        // Menggunakan OrangTuaTemplateExport untuk membuat template
-        return Excel::download(new OrangTuaTemplateExport, 'template-import-orangtua.xlsx');
+        // Solusi langsung tanpa menggunakan class OrangTuaTemplateExport
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template Orang Tua');
+        
+        // Header kolom
+        $headers = [
+            'ID_SISWA', 'NAMA_AYAH', 'PEKERJAAN_AYAH', 'NAMA_IBU', 
+            'PEKERJAAN_IBU', 'ALAMAT', 'NO_HP'
+        ];
+        
+        // Set header
+        foreach ($headers as $index => $header) {
+            $column = chr(65 + $index); // A, B, C, ...
+            $sheet->setCellValue($column . '1', $header);
+        }
+        
+        // Format header
+        $sheet->getStyle('A1:G1')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4472C4']
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+        
+        // Tambahkan contoh data
+        $exampleData = [
+            ['6A25001', 'Budi Santoso', 'Wiraswasta', 'Siti Aisyah', 'Ibu Rumah Tangga', 'Jl. Contoh No. 123, Jakarta', '081234567890'],
+            ['6B25002', 'Ahmad Hidayat', 'Karyawan Swasta', 'Dewi Susanti', 'Guru', 'Jl. Merdeka No. 45, Jakarta', '082345678901'],
+        ];
+        
+        $row = 2;
+        foreach ($exampleData as $data) {
+            foreach ($data as $index => $value) {
+                $column = chr(65 + $index); // A, B, C, ...
+                $sheet->setCellValue($column . $row, $value);
+            }
+            $row++;
+        }
+        
+        // Set panjang kolom otomatis
+        foreach (range('A', 'G') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+        
+        // Tambahkan keterangan format
+        $row = 4;
+        $sheet->setCellValue('A' . $row, 'Keterangan:');
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true);
+        $row++;
+        
+        $keterangan = [
+            'Format ID Siswa: 6 + Kode Jurusan + Tahun (yy) + Nomor Urut (001)',
+            'Contoh: 6A25001 = Jurusan A, tahun 2025, nomor urut 001',
+            'Pastikan ID Siswa sudah terdaftar dalam sistem',
+            'No HP diisi dengan format angka (tanpa tanda +/spasi)',
+            'Alamat diisi dengan lengkap termasuk RT/RW jika ada'
+        ];
+        
+        foreach ($keterangan as $ket) {
+            $sheet->setCellValue('A' . $row, $ket);
+            $sheet->mergeCells('A' . $row . ':G' . $row);
+            $row++;
+        }
+        
+        // Format area keterangan
+        $sheet->getStyle('A4:G' . ($row-1))->applyFromArray([
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'FFFFE0']
+            ],
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => '4472C4']
+                ]
+            ]
+        ]);
+        
+        // Format data contoh
+        $sheet->getStyle('A2:G3')->applyFromArray([
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'F0F8FF']
+            ]
+        ]);
+        
+        // Membuat file Excel
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'template-import-orangtua.xlsx';
+        $temp_file = tempnam(sys_get_temp_dir(), $filename);
+        $writer->save($temp_file);
+        
+        // Return file untuk di-download
+        return response()->download($temp_file, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 }

@@ -8,6 +8,9 @@
             <i class="fas fa-user-graduate text-blue-500 mr-2"></i> Daftar Siswa
         </h5>
         <div class="flex space-x-2">
+            <a href="{{ route('alokasi.unallocated') }}" class="bg-indigo-500 text-white hover:bg-indigo-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
+                <i class="fas fa-user-check mr-2"></i> Alokasi Siswa
+            </a>
             <a href="{{ route('siswa.create') }}" class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
                 <i class="fas fa-plus-circle mr-2"></i> Tambah Siswa
             </a>
@@ -30,10 +33,10 @@
             </div>
             
             <div class="flex space-x-2">
-                <a href="#" onclick="document.getElementById('importModal').classList.remove('hidden'); return false;" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none flex items-center">
+                <a href="{{ route('siswa.import') }}" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none flex items-center">
                     <i class="fas fa-file-import text-green-500 mr-2"></i> Import
                 </a>
-                <a href="#" onclick="alert('Fitur export belum diimplementasikan'); return false;" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none flex items-center">
+                <a href="{{ route('siswa.export') }}" class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none flex items-center">
                     <i class="fas fa-file-export text-blue-500 mr-2"></i> Export
                 </a>
             </div>
@@ -95,6 +98,22 @@
     </div>
     @endif
     
+    <!-- Informasi Format ID -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mx-4 mt-3">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-500"></i>
+            </div>
+            <div class="ml-3">
+                <h4 class="text-sm font-medium text-blue-800">Format ID Siswa</h4>
+                <p class="text-xs text-blue-600 mt-1">
+                    <strong>Siswa Baru:</strong> 6 + tahun (yy) + nomor urut (001)<br>
+                    <strong>Setelah Alokasi:</strong> 6 + kode jurusan + tahun (yy) + nomor urut (001)
+                </p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Table Section -->
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -110,7 +129,7 @@
                         Jenis Kelamin
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tanggal Lahir
+                        Jurusan
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Kelas
@@ -130,6 +149,50 @@
                         <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full bg-blue-100 text-blue-800">
                             {{ $siswa->id_siswa }}
                         </span>
+                        @php
+                            $isAllocated = false;
+                            $isFormatNew = false;
+                            $idNeedsUpdate = false;
+
+                            // Cek apakah format ID baru (diawali dengan "6")
+                            if (substr($siswa->id_siswa, 0, 1) == '6') {
+                                $isFormatNew = true;
+                                
+                                // Cek apakah sudah dialokasikan
+                                if ($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan) {
+                                    $isAllocated = true;
+                                    
+                                    // Cek apakah ID perlu diperbarui (tidak mengandung kode jurusan)
+                                    $kodeJurusan = $siswa->detailSiswa->kode_jurusan;
+                                    if (strlen($siswa->id_siswa) > 6) {
+                                        $idContainsJurusan = (substr($siswa->id_siswa, 1, strlen($kodeJurusan)) === $kodeJurusan);
+                                        if (!$idContainsJurusan) {
+                                            $idNeedsUpdate = true;
+                                        }
+                                    } else {
+                                        $idNeedsUpdate = true;
+                                    }
+                                }
+                            }
+                        @endphp
+                        
+                        @if($isFormatNew && !$isAllocated)
+                            <div class="text-xs text-orange-600 mt-1">
+                                <i class="fas fa-exclamation-triangle"></i> Belum Dialokasi
+                            </div>
+                        @elseif($isFormatNew && $isAllocated && $idNeedsUpdate)
+                            <div class="text-xs text-orange-600 mt-1">
+                                <i class="fas fa-exclamation-triangle"></i> Perlu Update ID
+                            </div>
+                        @elseif($isFormatNew && $isAllocated && !$idNeedsUpdate)
+                            <div class="text-xs text-green-600 mt-1">
+                                <i class="fas fa-check-circle"></i> Teralokasi
+                            </div>
+                        @elseif(!$isFormatNew)
+                            <div class="text-xs text-red-600 mt-1">
+                                <i class="fas fa-exclamation-circle"></i> Format Lama
+                            </div>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {{ $siswa->nama_siswa }}
@@ -148,19 +211,90 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-calendar-alt mr-1"></i> {{ $siswa->tanggal_lahir ? date('d/m/Y', strtotime($siswa->tanggal_lahir)) : '-' }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        @if($siswa->detailSiswa && $siswa->detailSiswa->kelas)
-                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                <i class="fas fa-chalkboard mr-1"></i> {{ $siswa->detailSiswa->kelas->nama_kelas }}
+                        @php
+                            $namaJurusan = null;
+                            $kodeJurusan = null;
+                            // Coba mendapatkan jurusan melalui kelas
+                            if($siswa->detailSiswa && $siswa->detailSiswa->kelas && $siswa->detailSiswa->kelas->jurusan) {
+                                $namaJurusan = $siswa->detailSiswa->kelas->jurusan->Nama_Jurusan;
+                                $kodeJurusan = $siswa->detailSiswa->kelas->jurusan->Kode_Jurusan;
+                            }
+                            // Jika tidak berhasil, coba mendapatkan jurusan langsung dari DetailSiswa
+                            elseif($siswa->detailSiswa && $siswa->detailSiswa->jurusan) {
+                                $namaJurusan = $siswa->detailSiswa->jurusan->Nama_Jurusan;
+                                $kodeJurusan = $siswa->detailSiswa->jurusan->Kode_Jurusan;
+                            }
+                            // Jika masih tidak berhasil, coba ambil dari tabel jurusan berdasarkan kode_jurusan
+                            elseif($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan) {
+                                $jurusan = \App\Models\Jurusan::where('Kode_Jurusan', $siswa->detailSiswa->kode_jurusan)->first();
+                                if($jurusan) {
+                                    $namaJurusan = $jurusan->Nama_Jurusan;
+                                    $kodeJurusan = $jurusan->Kode_Jurusan;
+                                }
+                            }
+                            
+                            // Deteksi format ID apakah sudah sesuai dengan jurusan
+                            $idSesuaiJurusan = false;
+                            if($kodeJurusan && strlen($siswa->id_siswa) > 7 && substr($siswa->id_siswa, 0, 1) == '6') {
+                                // Periksa apakah ID siswa mengandung kode jurusan (pada posisi ke-2 setelah kode sekolah)
+                                $idSesuaiJurusan = (substr($siswa->id_siswa, 1, strlen($kodeJurusan)) === $kodeJurusan);
+                            }
+                        @endphp
+                        
+                        @if($namaJurusan)
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                <i class="fas fa-graduation-cap mr-1"></i> {{ $namaJurusan }} ({{ $kodeJurusan }})
                             </span>
                         @else
                             <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                <i class="fas fa-chalkboard mr-1"></i> Belum ada kelas
+                                <i class="fas fa-graduation-cap mr-1"></i> Belum ada jurusan
                             </span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        @php
+                            $namaKelas = null;
+                            $tingkatKelas = null;
+                            $tahunAjaran = null;
+                            // Coba mendapatkan kelas
+                            if($siswa->detailSiswa && $siswa->detailSiswa->kelas) {
+                                $namaKelas = $siswa->detailSiswa->kelas->Nama_Kelas;
+                                $tingkatKelas = $siswa->detailSiswa->kelas->tingkat;
+                                $tahunAjaran = $siswa->detailSiswa->kelas->Tahun_Ajaran;
+                            }
+                            // Jika tidak berhasil, coba ambil dari tabel kelas berdasarkan kode_kelas
+                            elseif($siswa->detailSiswa && $siswa->detailSiswa->kode_kelas) {
+                                $kelas = \App\Models\Kelas::where('Kode_Kelas', $siswa->detailSiswa->kode_kelas)->first();
+                                if($kelas) {
+                                    $namaKelas = $kelas->Nama_Kelas;
+                                    $tingkatKelas = $kelas->tingkat;
+                                    $tahunAjaran = $kelas->Tahun_Ajaran;
+                                }
+                            }
+                        @endphp
+                        
+                        @if($namaKelas)
+                            <div class="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800 inline-block">
+                                <div class="flex flex-col items-center">
+                                    <div>
+                                        <i class="fas fa-chalkboard mr-1"></i> {{ $namaKelas }}
+                                    </div>
+                                    @if($tahunAjaran)
+                                        <div class="text-xs text-indigo-600 mt-0.5 text-center">
+                                            {{ $tahunAjaran }}
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex items-center space-x-1">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    <i class="fas fa-chalkboard mr-1"></i> Belum ada kelas
+                                </span>
+                                <button type="button" onclick="openAlokasiModal('{{ $siswa->id_siswa }}', '{{ $siswa->nama_siswa }}')" class="text-xs text-indigo-600 hover:text-indigo-800" title="Alokasi ke kelas">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                            </div>
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -182,6 +316,9 @@
                             <a href="{{ route('siswa.edit', $siswa->id_siswa) }}" class="text-white bg-yellow-500 hover:bg-yellow-600 rounded-md p-2 transition-colors duration-200" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
+                            <button type="button" id="alokasi-{{ $siswa->id_siswa }}" onclick="openAlokasiModal('{{ $siswa->id_siswa }}', '{{ $siswa->nama_siswa }}')" class="text-white bg-indigo-500 hover:bg-indigo-600 rounded-md p-2 transition-colors duration-200" title="Alokasi Kelas">
+                                <i class="fas fa-user-check"></i>
+                            </button>
                             <form action="{{ route('siswa.destroy', $siswa->id_siswa) }}" method="POST" class="inline-block">
                                 @csrf
                                 @method('DELETE')
@@ -232,56 +369,73 @@
     </div>
 </div>
 
-<!-- Import Modal -->
-<div id="importModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<!-- Alokasi Siswa Modal -->
+<div id="alokasiModal" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen">
         <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" id="modalOverlay"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" id="alokasiModalOverlay"></div>
         
         <!-- Modal content -->
         <div class="relative bg-white rounded-lg max-w-md w-full mx-auto shadow-xl z-20">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 rounded-t-lg">
-                <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <i class="fas fa-file-import text-green-600"></i>
-                    </div>
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                            Import Data Siswa
-                        </h3>
-                        <div class="mt-2">
-                            <p class="text-sm text-gray-500">
-                                Silakan unggah file Excel (.xlsx, .xls, .csv) yang berisi data siswa untuk diimport.
-                            </p>
-                        </div>
-                    </div>
+                <div class="flex justify-between items-center border-b pb-3 mb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="alokasiModalTitle">
+                        Alokasi Siswa ke Kelas
+                    </h3>
+                    <button type="button" class="text-gray-400 hover:text-gray-500" onclick="closeAlokasiModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
                 
-                <form action="#" method="POST" enctype="multipart/form-data" class="mt-5">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="importFile" class="block text-sm font-medium text-gray-700 mb-1">File Excel</label>
-                        <input type="file" name="file" id="importFile" required 
-                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md
-                               file:border-0 file:text-sm file:font-medium
-                               file:bg-blue-50 file:text-blue-700
-                               hover:file:bg-blue-100">
-                        <p class="mt-1 text-xs text-gray-500">Format file: .xlsx, .xls, atau .csv (maks. 5MB)</p>
+                <!-- Informasi Format ID -->
+                <div class="mb-4 bg-yellow-50 p-3 rounded-md">
+                    <h4 class="text-sm font-medium text-yellow-800">Perubahan ID Siswa</h4>
+                    <p class="text-xs text-yellow-700 mt-1">
+                        Setelah alokasi, ID siswa akan berubah menjadi:<br>
+                        <strong>6 + kode_jurusan + tahun(yy) + nomor_urut(001)</strong>
+                    </p>
+                </div>
+                
+                <div class="py-2">
+                    <div class="text-sm text-gray-500 mb-3">
+                        <p>Data jurusan tersedia: <span id="jurusanCount" class="font-medium">0 jurusan</span></p>
+                        <p>Data kelas tersedia: <span id="kelasCount" class="font-medium">0 kelas</span></p>
                     </div>
                     
-                    <div class="border rounded-md p-3 mt-3 bg-yellow-50">
-                        <h4 class="text-sm font-medium text-yellow-800">Format Template</h4>
-                        <p class="text-xs text-yellow-600 mt-1">Pastikan file memiliki kolom berikut: ID Siswa, Nama Siswa, Jenis Kelamin, Tanggal Lahir, dan Tanggal Masuk</p>
-                        <a href="#" class="inline-flex items-center mt-2 text-xs text-blue-600 hover:text-blue-800">
-                            <i class="fas fa-download mr-1"></i> Download Template
-                        </a>
+                    <p class="text-sm text-gray-700 mb-2">
+                        Anda akan mengalokasikan siswa:
+                    </p>
+                    <p class="font-medium text-gray-900 mb-4" id="namaSiswaAlokasi"></p>
+                    <p class="text-xs text-gray-500 mb-1" id="idSiswaAlokasi"></p>
+                </div>
+                
+                <form id="alokasiForm" action="{{ route('siswa.alokasi') }}" method="POST" class="mt-3">
+                    @csrf
+                    <input type="hidden" name="id_siswa" id="inputIdSiswa">
+                    
+                    <div class="mb-4">
+                        <label for="jurusan" class="block text-sm font-medium text-gray-700 mb-1">
+                            Jurusan <span class="text-red-500">*</span>
+                        </label>
+                        <select id="jurusan" name="kode_jurusan" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500" onchange="loadKelas()" required>
+                            <option value="">Pilih Jurusan</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="kelas" class="block text-sm font-medium text-gray-700 mb-1">
+                            Kelas <span class="text-red-500">*</span>
+                        </label>
+                        <select id="kelas" name="kode_kelas" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Kelas akan tersedia setelah memilih jurusan</option>
+                        </select>
                     </div>
                     
                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Import Data
+                        <button type="submit" class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                            Alokasikan Siswa
                         </button>
-                        <button type="button" id="cancelImport" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        <button type="button" onclick="closeAlokasiModal()" class="mt-3 inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                             Batal
                         </button>
                     </div>
@@ -338,25 +492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Import Modal
-    const importModal = document.getElementById('importModal');
-    const cancelImport = document.getElementById('cancelImport');
-    const modalOverlay = document.getElementById('modalOverlay');
-    
-    if (cancelImport) {
-        cancelImport.addEventListener('click', function() {
-            importModal.classList.add('hidden');
-        });
-    }
-    
-    if (modalOverlay) {
-        modalOverlay.addEventListener('click', function(e) {
-            if (e.target === modalOverlay) {
-                importModal.classList.add('hidden');
-            }
-        });
-    }
-    
     // Auto close alerts after 5 seconds
     const alerts = document.querySelectorAll('.close-alert').forEach(function(alert) {
         setTimeout(function() {
@@ -365,6 +500,235 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 5000);
     });
+    
+    // Load jurusan data when page loads for modal
+    loadJurusan();
+    
+    // Check URL hash for alokasi-ID pattern
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#alokasi-')) {
+        const siswaId = hash.substring(9); // Extract ID after #alokasi-
+        const siswaElement = document.getElementById('alokasi-' + siswaId);
+        if (siswaElement) {
+            // Find the row containing this button
+            const row = siswaElement.closest('tr');
+            if (row) {
+                const namaSiswa = row.querySelector('td:nth-child(2)').textContent.trim();
+                // Trigger click on the alokasi button
+                setTimeout(() => {
+                    openAlokasiModal(siswaId, namaSiswa);
+                    // Scroll to the element and highlight it
+                    siswaElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    row.classList.add('bg-yellow-50');
+                    setTimeout(() => {
+                        row.classList.remove('bg-yellow-50');
+                    }, 3000);
+                }, 500);
+            }
+        }
+    }
+});
+
+// Function to open alokasi modal
+function openAlokasiModal(id_siswa, nama_siswa) {
+    document.getElementById('inputIdSiswa').value = id_siswa;
+    document.getElementById('namaSiswaAlokasi').textContent = nama_siswa;
+    document.getElementById('idSiswaAlokasi').textContent = 'ID saat ini: ' + id_siswa;
+    document.getElementById('alokasiModal').classList.remove('hidden');
+    
+    // Load jurusan data
+    loadJurusan();
+    
+    // Reset form selections
+    document.getElementById('jurusan').selectedIndex = 0;
+    document.getElementById('kelas').innerHTML = '<option value="">Kelas akan tersedia setelah memilih jurusan</option>';
+}
+
+// Function to close alokasi modal
+function closeAlokasiModal() {
+    document.getElementById('alokasiModal').classList.add('hidden');
+}
+
+// Function to load jurusan data
+function loadJurusan() {
+    // Set loading indicator
+    document.getElementById('jurusanCount').textContent = 'Memuat...';
+    
+    fetch('{{ route("api.jurusan") }}')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const jurusanSelect = document.getElementById('jurusan');
+            jurusanSelect.innerHTML = '<option value="">Pilih Jurusan</option>';
+            
+            // Check if data is valid array
+            if (!data || !Array.isArray(data)) {
+                console.error("Respon jurusan tidak valid:", data);
+                document.getElementById('jurusanCount').textContent = '0 jurusan';
+                return;
+            }
+            
+            data.forEach(jurusan => {
+                const option = document.createElement('option');
+                option.value = jurusan.kode_jurusan || jurusan.Kode_Jurusan;
+                option.textContent = (jurusan.nama_jurusan || jurusan.Nama_Jurusan) + ' (' + (jurusan.kode_jurusan || jurusan.Kode_Jurusan) + ')';
+                jurusanSelect.appendChild(option);
+            });
+            
+            // Update jurusan count
+            document.getElementById('jurusanCount').textContent = data.length + ' jurusan';
+        })
+        .catch(error => {
+            console.error('Error loading jurusan:', error);
+            document.getElementById('jurusanCount').textContent = '0 jurusan';
+            
+            // Add diagnostic info to console
+            console.log('API endpoint called:', '{{ route("api.jurusan") }}');
+        });
+}
+
+// Function to load kelas data based on selected jurusan
+function loadKelas() {
+    // Set loading indicator
+    document.getElementById('kelasCount').textContent = 'Memuat...';
+    
+    const jurusanSelect = document.getElementById('jurusan');
+    const kelasSelect = document.getElementById('kelas');
+    const kodeJurusan = jurusanSelect.value;
+    
+    if (!kodeJurusan) {
+        kelasSelect.innerHTML = '<option value="">Kelas akan tersedia setelah memilih jurusan</option>';
+        document.getElementById('kelasCount').textContent = '0 kelas';
+        return;
+    }
+    
+    // Show API URL for debugging
+    console.log('Calling API:', `{{ route('api.kelas') }}?kode_jurusan=${kodeJurusan}`);
+    
+    fetch(`{{ route('api.kelas') }}?kode_jurusan=${kodeJurusan}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Log the response for debugging
+            console.log('API response:', data);
+            
+            kelasSelect.innerHTML = '';
+            
+            // Handle if data is not array or empty
+            if (!data || typeof data !== 'object') {
+                kelasSelect.innerHTML = '<option value="">Tidak ada kelas tersedia</option>';
+                document.getElementById('kelasCount').textContent = '0 kelas';
+                return;
+            }
+            
+            // Handle error response
+            if (data.error) {
+                console.error('API error:', data.error);
+                kelasSelect.innerHTML = `<option value="">Error: ${data.error}</option>`;
+                document.getElementById('kelasCount').textContent = '0 kelas';
+                return;
+            }
+            
+            // Convert data to array if it's not already
+            const kelasArray = Array.isArray(data) ? data : Object.values(data);
+            
+            if (kelasArray.length === 0) {
+                kelasSelect.innerHTML = '<option value="">Tidak ada kelas tersedia untuk jurusan ini</option>';
+                document.getElementById('kelasCount').textContent = '0 kelas';
+                return;
+            }
+            
+            kelasSelect.innerHTML = '<option value="">Pilih Kelas</option>';
+            
+            kelasArray.forEach(kelas => {
+                if (kelas && typeof kelas === 'object') {
+                    const option = document.createElement('option');
+                    option.value = kelas.Kode_Kelas || kelas.kode_kelas;
+                    const namaKelas = kelas.Nama_Kelas || kelas.nama_kelas;
+                    const tahunAjaran = kelas.Tahun_Ajaran || kelas.tahun_ajaran;
+                    
+                    let displayText = namaKelas || 'Kelas tanpa nama';
+                    if (tahunAjaran) {
+                        displayText += ` (${tahunAjaran})`;
+                    }
+                    
+                    option.textContent = displayText;
+                    kelasSelect.appendChild(option);
+                }
+            });
+            
+            // Update kelas count
+            document.getElementById('kelasCount').textContent = kelasArray.length + ' kelas';
+            
+            // Generate preview of new ID
+            const idSiswa = document.getElementById('inputIdSiswa').value;
+            const tahunSekarang = new Date().getFullYear().toString().substr(-2);
+            
+            if (idSiswa) {
+                let newIdPreview = '6' + kodeJurusan + tahunSekarang + '001*';
+                document.getElementById('idSiswaAlokasi').innerHTML = 'ID saat ini: ' + idSiswa + '<br>ID baru: <span class="text-blue-600 font-medium">' + newIdPreview + '</span><br><small class="text-gray-500">*Nomor urut akan dihitung otomatis</small>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading kelas:', error);
+            kelasSelect.innerHTML = '<option value="">Error: Gagal memuat data kelas</option>';
+            document.getElementById('kelasCount').textContent = '0 kelas';
+        });
+}
+
+// Add event listener for alokasi modal overlay
+document.addEventListener('DOMContentLoaded', function() {
+    const alokasiModalOverlay = document.getElementById('alokasiModalOverlay');
+    
+    if (alokasiModalOverlay) {
+        alokasiModalOverlay.addEventListener('click', function(e) {
+            if (e.target === alokasiModalOverlay) {
+                closeAlokasiModal();
+            }
+        });
+    }
+    
+    // Add console log for API routes (debugging)
+    console.log('Jurusan API URL:', '{{ route("api.jurusan") }}');
+    console.log('Kelas API URL template:', '{{ route("api.kelas") }}?kode_jurusan=XXX');
+    
+    // Validate form before submission
+    const alokasiForm = document.getElementById('alokasiForm');
+    if (alokasiForm) {
+        alokasiForm.addEventListener('submit', function(e) {
+            const jurusanSelect = document.getElementById('jurusan');
+            const kelasSelect = document.getElementById('kelas');
+            
+            if (!jurusanSelect.value) {
+                e.preventDefault();
+                alert('Pilih jurusan terlebih dahulu');
+                return false;
+            }
+            
+            if (!kelasSelect.value) {
+                e.preventDefault();
+                alert('Pilih kelas terlebih dahulu');
+                return false;
+            }
+            
+            // Konfirmasi perubahan ID
+            const confirmMessage = 'Perhatian: Alokasi ini akan mengubah ID siswa sesuai dengan jurusan yang dipilih. Pastikan semua sistem terkait sudah diperbarui untuk menggunakan ID baru. Lanjutkan?';
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return false;
+            }
+            
+            return true;
+        });
+    }
 });
 </script>
 @endpush
