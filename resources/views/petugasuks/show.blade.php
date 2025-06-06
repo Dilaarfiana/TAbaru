@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
     <div class="max-w-6xl mx-auto"> <!-- Lebih lebar dari sebelumnya -->
@@ -60,6 +60,10 @@
                         <div class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium {{ $petugasUKS->status_aktif ? 'bg-green-500' : 'bg-red-500' }} text-white shadow-sm">
                             <i class="fas {{ $petugasUKS->status_aktif ? 'fa-check-circle' : 'fa-times-circle' }} mr-2"></i>
                             {{ $petugasUKS->status_aktif ? 'Aktif' : 'Tidak Aktif' }}
+                        </div>
+                        <div class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium {{ $petugasUKS->level == 'admin' ? 'bg-purple-500' : 'bg-blue-500' }} text-white shadow-sm">
+                            <i class="fas {{ $petugasUKS->level == 'admin' ? 'fa-user-shield' : 'fa-user-nurse' }} mr-2"></i>
+                            {{ $petugasUKS->level == 'admin' ? 'Admin' : 'Petugas' }}
                         </div>
                     </div>
                 </div>
@@ -139,6 +143,16 @@
                                     </p>
                                 @endif
                             </div>
+
+                            <div>
+                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Level Akses</h4>
+                                <p class="text-gray-900 flex items-center">
+                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full {{ $petugasUKS->level == 'admin' ? 'bg-purple-100' : 'bg-blue-100' }} mr-2">
+                                        <i class="fas {{ $petugasUKS->level == 'admin' ? 'fa-user-shield text-purple-600' : 'fa-user-nurse text-blue-600' }}"></i>
+                                    </span>
+                                    {{ $petugasUKS->level == 'admin' ? 'Admin' : 'Petugas' }}
+                                </p>
+                            </div>
                             
                             <div>
                                 <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Tanggal Dibuat</h4>
@@ -190,11 +204,13 @@
                         <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-500">Pemeriksaan</p>
-                                    <p class="mt-2 text-xl font-semibold text-blue-600">0</p>
+                                    <p class="text-sm font-medium text-gray-500">Level</p>
+                                    <p class="mt-2 text-xl font-semibold {{ $petugasUKS->level == 'admin' ? 'text-purple-600' : 'text-blue-600' }}">
+                                        {{ $petugasUKS->level == 'admin' ? 'Admin' : 'Petugas' }}
+                                    </p>
                                 </div>
-                                <div class="bg-blue-100 p-3 rounded-full">
-                                    <i class="fas fa-stethoscope text-blue-500 text-xl"></i>
+                                <div class="{{ $petugasUKS->level == 'admin' ? 'bg-purple-100' : 'bg-blue-100' }} p-3 rounded-full">
+                                    <i class="fas {{ $petugasUKS->level == 'admin' ? 'fa-user-shield text-purple-500' : 'fa-user-nurse text-blue-500' }} text-xl"></i>
                                 </div>
                             </div>
                         </div>

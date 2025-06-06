@@ -6,28 +6,32 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('pemeriksaan_fisiks', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->string('id_pasien');
-            $table->date('tanggal_pemeriksaan');
-            $table->decimal('tinggi_badan', 5, 2)->nullable();
-            $table->decimal('berat_badan', 5, 2)->nullable();
-            $table->decimal('suhu_badan', 5, 2)->nullable();
-            $table->string('tekanan_darah')->nullable();
-            $table->text('keluhan')->nullable();
-            $table->text('hasil_pemeriksaan')->nullable();
+            $table->string('id_prefisik', 5)->primary();
+            $table->string('id_detprx', 5);
+            $table->decimal('tinggi_badan', 4, 1)->nullable();
+            $table->decimal('berat_badan', 4, 1)->nullable();
+            $table->decimal('lingkar_kepala', 4, 1)->nullable();
+            $table->decimal('lingkar_lengan_atas', 3, 1)->nullable();
+            $table->string('dada', 50)->nullable();
+            $table->string('jantung', 50)->nullable();
+            $table->string('paru', 50)->nullable();
+            $table->string('perut', 50)->nullable();
+            $table->string('hepar', 50)->nullable();
+            $table->string('anogenital', 50)->nullable();
+            $table->string('ekstremitas', 50)->nullable();
+            $table->string('kepala', 50)->nullable();
+            $table->text('pemeriksaan_penunjang')->nullable();
+            $table->string('masalah_aktif', 50)->nullable();
+            $table->string('rencana_medis_dan_terapi', 50)->nullable();
             $table->timestamps();
+            
+            $table->foreign('id_detprx')->references('id_detprx')->on('detail_pemeriksaans')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('pemeriksaan_fisiks');

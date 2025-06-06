@@ -1,37 +1,118 @@
-@extends('layouts.admin')
+{{-- File: resources/views/rekam_medis/create.blade.php --}}
+{{-- ADMIN: FULL ACCESS, PETUGAS: CRU ACCESS, DOKTER: READ ONLY, ORANG TUA: NO ACCESS --}}
+@extends('layouts.app')
 
 @section('content')
+@php
+    $userLevel = session('user_level');
+    $isAdmin = $userLevel === 'admin';
+    $isPetugas = $userLevel === 'petugas';
+    $isDokter = $userLevel === 'dokter';
+    $isOrangTua = $userLevel === 'orang_tua';
+    
+    // Orang tua tidak boleh mengakses rekam medis sama sekali
+    if ($isOrangTua) {
+        return redirect()->route('dashboard.orangtua')->with('error', 'Akses ditolak. Orang tua tidak memiliki akses ke rekam medis. Silakan gunakan menu Ringkasan Kesehatan untuk informasi kesehatan anak Anda.');
+    }
+    
+    // Dokter tidak boleh membuat rekam medis (hanya read only)
+    if ($isDokter) {
+        return redirect()->route('dokter.rekam_medis.index')->with('error', 'Akses ditolak. Dokter hanya memiliki akses baca (read only) untuk rekam medis.');
+    }
+    
+    // Only admin and petugas can create rekam medis
+    if (!$isAdmin && !$isPetugas) {
+        abort(403, 'Anda tidak memiliki akses untuk menambah rekam medis.');
+    }
+    
+    // Define routes based on user role
+    if ($isAdmin) {
+        $baseRoute = 'rekam_medis';
+    } elseif ($isPetugas) {
+        $baseRoute = 'petugas.rekam_medis';
+    } else {
+        // Fallback, though shouldn't reach here due to access check above
+        $baseRoute = 'rekam_medis';
+    }
+    
+    $indexRoute = $baseRoute . '.index';
+    $createRoute = $baseRoute . '.create';
+    $storeRoute = $baseRoute . '.store';
+    $showRoute = $baseRoute . '.show';
+    $editRoute = $baseRoute . '.edit';
+@endphp
+
 <div class="p-4 bg-gray-50 min-h-screen">
     <!-- Form Card -->
-    <div class="max-w-5xl mx-auto bg-white rounded-md shadow">
+    <div class="max-w-6xl mx-auto bg-white rounded-md shadow-md">
         <!-- Header -->
         <div class="bg-white rounded-t-md px-6 py-4 flex justify-between items-center border-b">
             <div class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h2 class="text-xl font-medium text-gray-800">Tambah Rekam Medis Baru</h2>
+                <i class="fas fa-file-medical text-blue-500 mr-3 text-xl"></i>
+                <h2 class="text-xl font-bold text-gray-800">Tambah Rekam Medis Baru</h2>
+                @if($isPetugas)
+                    <span class="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+                        <i class="fas fa-user-tie mr-1"></i>Akses Petugas (CRU)
+                    </span>
+                @elseif($isAdmin)
+                    <span class="ml-3 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                        <i class="fas fa-user-shield mr-1"></i>Akses Admin (Full CRUD)
+                    </span>
+                @endif
             </div>
-            <a href="{{ route('rekam_medis.index') }}" class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Kembali
-            </a>
+            <div class="flex items-center space-x-2">
+                @if(isset($newId))
+                <span class="bg-blue-100 text-blue-800 text-sm font-bold py-1 px-3 rounded-full flex items-center">
+                    <i class="fas fa-tag mr-1"></i>
+                    RM-ID: {{ $newId }}
+                </span>
+                @endif
+                <a href="{{ route($indexRoute) }}" class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar
+                </a>
+            </div>
         </div>
         
         <!-- Form Content -->
         <div class="p-6">
+            <!-- Access Level Info -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                    </div>
+                    <div class="ml-3 w-full">
+                        <h3 class="text-md font-medium text-blue-800 mb-1">Informasi Rekam Medis</h3>
+                        <p class="text-sm text-blue-700 mb-2">
+                            Rekam medis adalah pencatatan lengkap riwayat kesehatan siswa yang dilakukan oleh dokter dan petugas UKS. Nomor rekam medis akan dibuat otomatis dengan format: <span class="font-mono font-medium">RM001, RM002, dst.</span>
+                        </p>
+                        
+                        <!-- Role Information -->
+                        <div class="mt-2 p-2 bg-blue-100 border border-blue-300 rounded">
+                            <p class="text-sm text-blue-800">
+                                <i class="fas fa-user-tag mr-1"></i>
+                                <strong>Akses Anda:</strong> 
+                                @if($isAdmin)
+                                    Administrator - Dapat mengelola semua data rekam medis (Tambah, Edit, Lihat, Hapus, Cetak, Export)
+                                @elseif($isPetugas)
+                                    Petugas UKS - Dapat menambah, mengedit, melihat, dan mencetak rekam medis. <span class="text-red-600 font-semibold">Tidak dapat menghapus data.</span>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alert Messages -->
             @if($errors->any())
                 <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
                         </div>
                         <div class="ml-3">
-                            <ul class="text-sm text-red-700 list-disc list-inside">
+                            <p class="text-sm font-medium text-red-800">Mohon perbaiki kesalahan berikut:</p>
+                            <ul class="text-sm text-red-700 list-disc list-inside mt-1">
                                 @foreach($errors->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
@@ -40,221 +121,665 @@
                     </div>
                 </div>
             @endif
-            
-            <!-- Info Box -->
-            <div class="bg-blue-50 p-4 rounded-lg mb-6">
+
+            @if(session('error'))
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 flex items-center justify-between">
                 <div class="flex">
                     <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                        </svg>
+                        <i class="fas fa-exclamation-circle text-red-500"></i>
                     </div>
                     <div class="ml-3">
-                        <p class="text-sm text-blue-700">
-                            Nomor Rekam Medis akan dibuat otomatis menggunakan format: <span class="font-mono font-medium">RM001, RM002, dst.</span>
+                        <p class="text-sm text-red-700">
+                            {{ session('error') }}
                         </p>
                     </div>
                 </div>
+                <button type="button" class="close-alert text-red-500 hover:text-red-600" onclick="this.parentElement.style.display='none'">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            
-            <form action="{{ route('rekam_medis.store') }}" method="POST">
-                @csrf
-                
-                <!-- Data Pasien dan Dokter -->
-                <div class="rounded-lg border border-gray-200 shadow-sm mb-6">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg">
-                        <h3 class="text-md font-medium text-gray-700">Informasi Pasien & Dokter</h3>
+            @endif
+
+            @if(session('warning'))
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 flex items-center justify-between">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-500"></i>
                     </div>
-                    <div class="p-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                            <!-- Pilih Siswa -->
-                            <div>
-                                <label for="Id_Siswa" class="block text-sm font-medium text-gray-700 mb-1">Siswa <span class="text-red-500">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </div>
-                                    <select id="Id_Siswa" name="Id_Siswa" required
-                                        class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none">
-                                        <option value="">Pilih Siswa</option>
-                                        @foreach($siswas as $siswa)
-                                            <option value="{{ $siswa->id_siswa }}" {{ old('Id_Siswa') == $siswa->id_siswa ? 'selected' : '' }}>
-                                                {{ $siswa->id_siswa }} - {{ $siswa->Nama_Siswa }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Pilih Dokter -->
-                            <div>
-                                <label for="Id_Dokter" class="block text-sm font-medium text-gray-700 mb-1">Dokter <span class="text-red-500">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </div>
-                                    <select id="Id_Dokter" name="Id_Dokter" required
-                                        class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none">
-                                        <option value="">Pilih Dokter</option>
-                                        @foreach($dokters as $dokter)
-                                            <option value="{{ $dokter->Id_Dokter }}" {{ old('Id_Dokter') == $dokter->Id_Dokter ? 'selected' : '' }}>
-                                                {{ $dokter->Id_Dokter }} - {{ $dokter->Nama_Dokter }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Tanggal & Waktu -->
-                            <div>
-                                <label for="Tanggal_Jam" class="block text-sm font-medium text-gray-700 mb-1">Tanggal & Waktu <span class="text-red-500">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                    <input type="datetime-local" id="Tanggal_Jam" name="Tanggal_Jam" value="{{ old('Tanggal_Jam') ?? now()->format('Y-m-d\TH:i') }}" required
-                                        class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            {!! session('warning') !!}
+                        </p>
                     </div>
                 </div>
+                <button type="button" class="close-alert text-yellow-500 hover:text-yellow-600" onclick="this.parentElement.style.display='none'">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            @endif
+
+            <form action="{{ route($storeRoute) }}" method="POST" id="rekamMedisForm">
+                @csrf
                 
-                <!-- Rekam Medis -->
-                <div class="rounded-lg border border-gray-200 shadow-sm mb-6">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg">
-                        <h3 class="text-md font-medium text-gray-700">Data Rekam Medis</h3>
+                @if(isset($newId))
+                <input type="hidden" id="No_Rekam_Medis" name="No_Rekam_Medis" value="{{ $newId }}">
+                @endif
+                
+                <!-- Informasi Waktu -->
+                <div class="bg-white border border-gray-200 rounded-lg p-5 mb-6 shadow-sm">
+                    <div class="flex items-center mb-4 border-b pb-2">
+                        <i class="fas fa-clock text-blue-500 mr-2"></i>
+                        <h3 class="text-lg font-medium text-gray-800">Informasi Waktu Pemeriksaan</h3>
                     </div>
-                    <div class="p-4">
-                        <!-- Keluhan Utama -->
-                        <div class="mb-5">
-                            <label for="Keluhan_Utama" class="block text-sm font-medium text-gray-700 mb-1">Keluhan Utama <span class="text-red-500">*</span></label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Tanggal dan Jam -->
+                        <div>
+                            <label for="Tanggal_Jam" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-calendar-alt text-blue-500 mr-1"></i>
+                                Tanggal & Jam Pemeriksaan <span class="text-red-500">*</span>
+                            </label>
                             <div class="relative">
-                                <div class="absolute top-3 left-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                    </svg>
-                                </div>
-                                <textarea id="Keluhan_Utama" name="Keluhan_Utama" rows="3" required
-                                    class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                    placeholder="Masukkan keluhan utama pasien">{{ old('Keluhan_Utama') }}</textarea>
+                                <input 
+                                    type="datetime-local" 
+                                    id="Tanggal_Jam" 
+                                    name="Tanggal_Jam" 
+                                    value="{{ old('Tanggal_Jam', now()->format('Y-m-d\TH:i')) }}" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                >
                             </div>
+                            <p class="text-xs text-gray-500 mt-1">Masukkan tanggal dan waktu pemeriksaan dilakukan</p>
+                            @error('Tanggal_Jam')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
-                        
-                        <!-- Riwayat Penyakit Sekarang -->
-                        <div class="mb-5">
-                            <label for="Riwayat_Penyakit_Sekarang" class="block text-sm font-medium text-gray-700 mb-1">Riwayat Penyakit Sekarang</label>
-                            <div class="relative">
-                                <div class="absolute top-3 left-3 flex items-center pointer-events-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                    </svg>
-                                </div>
-                                <textarea id="Riwayat_Penyakit_Sekarang" name="Riwayat_Penyakit_Sekarang" rows="3"
-                                    class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                    placeholder="Riwayat penyakit yang sedang dialami">{{ old('Riwayat_Penyakit_Sekarang') }}</textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                            <!-- Riwayat Penyakit Dahulu -->
-                            <div>
-                                <label for="Riwayat_Penyakit_Dahulu" class="block text-sm font-medium text-gray-700 mb-1">Riwayat Penyakit Dahulu</label>
-                                <div class="relative">
-                                    <div class="absolute top-3 left-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                    <textarea id="Riwayat_Penyakit_Dahulu" name="Riwayat_Penyakit_Dahulu" rows="3"
-                                        class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                        placeholder="Riwayat penyakit yang pernah dialami">{{ old('Riwayat_Penyakit_Dahulu') }}</textarea>
-                                </div>
-                            </div>
-                            
-                            <!-- Riwayat Imunisasi -->
-                            <div>
-                                <label for="Riwayat_Imunisasi" class="block text-sm font-medium text-gray-700 mb-1">Riwayat Imunisasi</label>
-                                <div class="relative">
-                                    <div class="absolute top-3 left-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                        </svg>
-                                    </div>
-                                    <textarea id="Riwayat_Imunisasi" name="Riwayat_Imunisasi" rows="3"
-                                        class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                        placeholder="Catatan imunisasi yang sudah diberikan">{{ old('Riwayat_Imunisasi') }}</textarea>
-                                </div>
-                            </div>
-                            
-                            <!-- Riwayat Penyakit Keluarga -->
-                            <div>
-                                <label for="Riwayat_Penyakit_Keluarga" class="block text-sm font-medium text-gray-700 mb-1">Riwayat Penyakit Keluarga</label>
-                                <div class="relative">
-                                    <div class="absolute top-3 left-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                    <textarea id="Riwayat_Penyakit_Keluarga" name="Riwayat_Penyakit_Keluarga" rows="3"
-                                        class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                        placeholder="Riwayat penyakit yang ada pada keluarga">{{ old('Riwayat_Penyakit_Keluarga') }}</textarea>
-                                </div>
-                            </div>
-                            
-                            <!-- Silsilah Keluarga -->
-                            <div>
-                                <label for="Silsilah_Keluarga" class="block text-sm font-medium text-gray-700 mb-1">Silsilah Keluarga</label>
-                                <div class="relative">
-                                    <div class="absolute top-3 left-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                        </svg>
-                                    </div>
-                                    <textarea id="Silsilah_Keluarga" name="Silsilah_Keluarga" rows="3"
-                                        class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                        placeholder="Informasi silsilah keluarga">{{ old('Silsilah_Keluarga') }}</textarea>
-                                </div>
+
+                        <!-- Preview Info -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-info-circle text-gray-500 mr-1"></i>
+                                Preview Waktu
+                            </h4>
+                            <div id="timePreview" class="text-sm text-gray-600">
+                                Pilih tanggal dan waktu untuk melihat preview
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Grid untuk Siswa, Dokter, dan Petugas -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Kolom 1: Siswa -->
+                    <div class="bg-green-50 border border-green-100 rounded-lg p-5 shadow-sm">
+                        <div class="flex items-center mb-4 border-b border-green-200 pb-2">
+                            <i class="fas fa-user-graduate text-green-500 mr-2"></i>
+                            <h3 class="text-lg font-medium text-gray-800">Data Siswa</h3>
+                        </div>
+                        
+                        <div>
+                            <label for="Id_Siswa" class="block text-sm font-medium text-gray-700 mb-1">
+                                Pilih Siswa <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <select id="Id_Siswa" name="Id_Siswa" required
+                                    class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 appearance-none">
+                                    <option value="">-- Pilih Siswa --</option>
+                                    @if(isset($siswas))
+                                        @foreach($siswas as $siswa)
+                                            <option value="{{ $siswa->id_siswa }}" {{ old('Id_Siswa') == $siswa->id_siswa ? 'selected' : '' }}>
+                                                {{ $siswa->id_siswa }} - {{ $siswa->nama_siswa }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Pilih siswa yang akan diperiksa</p>
+                            @error('Id_Siswa')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Siswa Info Preview -->
+                        <div id="siswaInfo" class="mt-4 p-3 bg-white rounded-md border border-green-200 hidden">
+                            <h4 class="text-sm font-medium text-green-700 mb-2">
+                                <i class="fas fa-user text-green-600 mr-1"></i>
+                                Informasi Siswa
+                            </h4>
+                            <div id="siswaDetails" class="text-sm text-gray-600">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kolom 2: Dokter -->
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-5 shadow-sm">
+                        <div class="flex items-center mb-4 border-b border-blue-200 pb-2">
+                            <i class="fas fa-user-md text-blue-500 mr-2"></i>
+                            <h3 class="text-lg font-medium text-gray-800">Data Dokter</h3>
+                        </div>
+                        
+                        <div>
+                            <label for="Id_Dokter" class="block text-sm font-medium text-gray-700 mb-1">
+                                Pilih Dokter <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-stethoscope text-gray-400"></i>
+                                </div>
+                                <select id="Id_Dokter" name="Id_Dokter" required
+                                    class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 appearance-none">
+                                    <option value="">-- Pilih Dokter --</option>
+                                    @if(isset($dokters))
+                                        @foreach($dokters as $dokter)
+                                            <option value="{{ $dokter->Id_Dokter }}" {{ old('Id_Dokter') == $dokter->Id_Dokter ? 'selected' : '' }}>
+                                                {{ $dokter->Id_Dokter }} - {{ $dokter->Nama_Dokter }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Pilih dokter yang melakukan pemeriksaan</p>
+                            @error('Id_Dokter')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Dokter Info Preview -->
+                        <div id="dokterInfo" class="mt-4 p-3 bg-white rounded-md border border-blue-200 hidden">
+                            <h4 class="text-sm font-medium text-blue-700 mb-2">
+                                <i class="fas fa-user-md text-blue-600 mr-1"></i>
+                                Informasi Dokter
+                            </h4>
+                            <div id="dokterDetails" class="text-sm text-gray-600">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kolom 3: Petugas UKS -->
+                    <div class="bg-purple-50 border border-purple-100 rounded-lg p-5 shadow-sm">
+                        <div class="flex items-center mb-4 border-b border-purple-200 pb-2">
+                            <i class="fas fa-user-nurse text-purple-500 mr-2"></i>
+                            <h3 class="text-lg font-medium text-gray-800">Petugas UKS</h3>
+                        </div>
+                        
+                        <div>
+                            <label for="NIP" class="block text-sm font-medium text-gray-700 mb-1">
+                                Pilih Petugas <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-id-badge text-gray-400"></i>
+                                </div>
+                                <select id="NIP" name="NIP" required
+                                    class="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 appearance-none">
+                                    <option value="">-- Pilih Petugas UKS --</option>
+                                    @if(isset($petugasUKS))
+                                        @foreach($petugasUKS as $petugas)
+                                            <option value="{{ $petugas->NIP }}" {{ old('NIP') == $petugas->NIP ? 'selected' : '' }}>
+                                                {{ $petugas->NIP }} - {{ $petugas->nama_petugas_uks }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Pilih petugas UKS yang melakukan pemeriksaan</p>
+                            @error('NIP')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Petugas Info Preview -->
+                        <div id="petugasInfo" class="mt-4 p-3 bg-white rounded-md border border-purple-200 hidden">
+                            <h4 class="text-sm font-medium text-purple-700 mb-2">
+                                <i class="fas fa-user-nurse text-purple-600 mr-1"></i>
+                                Informasi Petugas
+                            </h4>
+                            <div id="petugasDetails" class="text-sm text-gray-600">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Keluhan Utama -->
+                <div class="bg-red-50 border border-red-100 rounded-lg p-5 shadow-sm mb-6">
+                    <div class="flex items-center mb-4 border-b border-red-200 pb-2">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                        <h3 class="text-lg font-medium text-gray-800">Keluhan Utama</h3>
+                    </div>
+                    
+                    <div>
+                        <label for="Keluhan_Utama" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-notes-medical text-red-500 mr-1"></i>
+                            Detail Keluhan Utama <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <textarea id="Keluhan_Utama" name="Keluhan_Utama" rows="4" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
+                                placeholder="Masukkan keluhan utama pasien dengan detail...">{{ old('Keluhan_Utama') }}</textarea>
+                            <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+                                <span id="keluhanCharCount">0</span> karakter
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Deskripsikan keluhan utama yang dialami siswa dengan lengkap</p>
+                        @error('Keluhan_Utama')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Template Keluhan -->
+                    <div class="mt-4 p-3 bg-white rounded-md border border-red-200">
+                        <h4 class="text-sm font-medium text-red-700 mb-2">
+                            <i class="fas fa-lightbulb text-red-600 mr-1"></i>
+                            Template Keluhan Umum
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <button type="button" class="keluhan-template-btn text-left p-2 text-xs bg-gray-50 hover:bg-red-100 rounded border transition-colors" 
+                                data-template="Siswa mengeluh sakit kepala sejak pagi hari, intensitas nyeri sedang, tidak disertai mual atau muntah">
+                                <i class="fas fa-head-side-cough text-red-500 mr-1"></i> Sakit Kepala
+                            </button>
+                            <button type="button" class="keluhan-template-btn text-left p-2 text-xs bg-gray-50 hover:bg-red-100 rounded border transition-colors"
+                                data-template="Siswa mengeluh demam disertai menggigil, suhu badan terasa panas, lemas dan tidak nafsu makan">
+                                <i class="fas fa-thermometer-half text-red-500 mr-1"></i> Demam
+                            </button>
+                            <button type="button" class="keluhan-template-btn text-left p-2 text-xs bg-gray-50 hover:bg-red-100 rounded border transition-colors"
+                                data-template="Siswa mengeluh nyeri perut, mual, kembung, BAB tidak lancar sejak kemarin">
+                                <i class="fas fa-hand-holding-medical text-red-500 mr-1"></i> Sakit Perut
+                            </button>
+                            <button type="button" class="keluhan-template-btn text-left p-2 text-xs bg-gray-50 hover:bg-red-100 rounded border transition-colors"
+                                data-template="Siswa terjatuh saat bermain, mengalami luka lecet/robek di area [sebutkan lokasi], berdarah">
+                                <i class="fas fa-band-aid text-red-500 mr-1"></i> Luka Akibat Jatuh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Riwayat Medis -->
+                <div class="bg-orange-50 border border-orange-100 rounded-lg p-5 shadow-sm mb-6">
+                    <div class="flex items-center mb-4 border-b border-orange-200 pb-2">
+                        <i class="fas fa-history text-orange-500 mr-2"></i>
+                        <h3 class="text-lg font-medium text-gray-800">Riwayat Medis</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Riwayat Penyakit Sekarang -->
+                        <div>
+                            <label for="Riwayat_Penyakit_Sekarang" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-clipboard-list text-orange-500 mr-1"></i>
+                                Riwayat Penyakit Sekarang
+                            </label>
+                            <div class="relative">
+                                <textarea id="Riwayat_Penyakit_Sekarang" name="Riwayat_Penyakit_Sekarang" rows="3"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                    placeholder="Riwayat penyakit yang sedang dialami...">{{ old('Riwayat_Penyakit_Sekarang') }}</textarea>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Jelaskan kondisi penyakit yang sedang dialami</p>
+                        </div>
+                        
+                        <!-- Riwayat Penyakit Dahulu -->
+                        <div>
+                            <label for="Riwayat_Penyakit_Dahulu" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-clock text-orange-500 mr-1"></i>
+                                Riwayat Penyakit Dahulu
+                            </label>
+                            <div class="relative">
+                                <textarea id="Riwayat_Penyakit_Dahulu" name="Riwayat_Penyakit_Dahulu" rows="3"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                    placeholder="Riwayat penyakit yang pernah dialami...">{{ old('Riwayat_Penyakit_Dahulu') }}</textarea>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Jelaskan penyakit yang pernah dialami sebelumnya</p>
+                        </div>
+                        
+                        <!-- Riwayat Imunisasi -->
+                        <div>
+                            <label for="Riwayat_Imunisasi" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-syringe text-orange-500 mr-1"></i>
+                                Riwayat Imunisasi
+                            </label>
+                            <div class="relative">
+                                <textarea id="Riwayat_Imunisasi" name="Riwayat_Imunisasi" rows="3"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                    placeholder="Catatan imunisasi yang sudah diberikan...">{{ old('Riwayat_Imunisasi') }}</textarea>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Catat riwayat imunisasi yang telah diterima</p>
+                        </div>
+                        
+                        <!-- Riwayat Penyakit Keluarga -->
+                        <div>
+                            <label for="Riwayat_Penyakit_Keluarga" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-users text-orange-500 mr-1"></i>
+                                Riwayat Penyakit Keluarga
+                            </label>
+                            <div class="relative">
+                                <textarea id="Riwayat_Penyakit_Keluarga" name="Riwayat_Penyakit_Keluarga" rows="3"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                    placeholder="Riwayat penyakit yang ada pada keluarga...">{{ old('Riwayat_Penyakit_Keluarga') }}</textarea>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Jelaskan riwayat penyakit keturunan dalam keluarga</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Silsilah Keluarga -->
+                <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-5 shadow-sm mb-6">
+                    <div class="flex items-center mb-4 border-b border-indigo-200 pb-2">
+                        <i class="fas fa-sitemap text-indigo-500 mr-2"></i>
+                        <h3 class="text-lg font-medium text-gray-800">Silsilah Keluarga</h3>
+                    </div>
+                    
+                    <div>
+                        <label for="Silsilah_Keluarga" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="fas fa-family text-indigo-500 mr-1"></i>
+                            Informasi Silsilah Keluarga
+                        </label>
+                        <div class="relative">
+                            <textarea id="Silsilah_Keluarga" name="Silsilah_Keluarga" rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Masukkan informasi silsilah keluarga...">{{ old('Silsilah_Keluarga') }}</textarea>
+                            <div class="absolute bottom-2 right-2 text-xs text-gray-400">
+                                <span id="silsilahCharCount">0</span> karakter
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Jelaskan struktur dan informasi penting tentang keluarga</p>
+                        @error('Silsilah_Keluarga')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+                
                 <!-- Form Buttons -->
-                <div class="mt-8 flex justify-end space-x-3">
-                    <button type="button" onclick="window.location.href='{{ route('rekam_medis.index') }}'" 
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <svg class="mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="window.location.href='{{ route($indexRoute) }}'" 
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <i class="fas fa-times mr-2 text-gray-500"></i>
                         Batal
                     </button>
                     <button type="submit" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        Simpan
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        id="submitBtn">
+                        <i class="fas fa-save mr-2"></i>
+                        <span id="submitText">Simpan Rekam Medis</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-close alerts after 5 seconds
+    const alerts = document.querySelectorAll('.close-alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            if (alert.parentElement) {
+                alert.parentElement.style.display = 'none';
+            }
+        }, 5000);
+    });
+
+    // Date validation - prevent future dates
+    const dateTimeInput = document.getElementById('Tanggal_Jam');
+    if (dateTimeInput) {
+        const today = new Date();
+        const formattedDate = today.toISOString().slice(0, 16);
+        dateTimeInput.max = formattedDate;
+        
+        // Update time preview
+        dateTimeInput.addEventListener('change', updateTimePreview);
+        updateTimePreview(); // Initial update
+    }
+    
+    function updateTimePreview() {
+        const timePreview = document.getElementById('timePreview');
+        if (dateTimeInput.value && timePreview) {
+            const date = new Date(dateTimeInput.value);
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            timePreview.textContent = date.toLocaleDateString('id-ID', options);
+        }
+    }
+
+    // Character counters for textareas
+    const keluhanTextarea = document.getElementById('Keluhan_Utama');
+    const keluhanCharCount = document.getElementById('keluhanCharCount');
+    const silsilahTextarea = document.getElementById('Silsilah_Keluarga');
+    const silsilahCharCount = document.getElementById('silsilahCharCount');
+    
+    if (keluhanTextarea && keluhanCharCount) {
+        keluhanTextarea.addEventListener('input', function() {
+            keluhanCharCount.textContent = this.value.length;
+        });
+    }
+    
+    if (silsilahTextarea && silsilahCharCount) {
+        silsilahTextarea.addEventListener('input', function() {
+            silsilahCharCount.textContent = this.value.length;
+        });
+    }
+
+    // Template buttons for keluhan
+    const keluhanTemplateBtns = document.querySelectorAll('.keluhan-template-btn');
+    keluhanTemplateBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const template = this.dataset.template;
+            if (keluhanTextarea && template) {
+                keluhanTextarea.value = template;
+                keluhanTextarea.focus();
+                if (keluhanCharCount) {
+                    keluhanCharCount.textContent = keluhanTextarea.value.length;
+                }
+            }
+        });
+    });
+
+    // Siswa selection handler
+    const siswaSelect = document.getElementById('Id_Siswa');
+    const siswaInfo = document.getElementById('siswaInfo');
+    const siswaDetails = document.getElementById('siswaDetails');
+    
+    if (siswaSelect && siswaInfo && siswaDetails) {
+        siswaSelect.addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const text = selectedOption.textContent;
+                const [id, nama] = text.split(' - ');
+                
+                siswaDetails.innerHTML = `
+                    <div class="grid grid-cols-1 gap-1">
+                        <div><strong>ID:</strong> ${id}</div>
+                        <div><strong>Nama:</strong> ${nama}</div>
+                    </div>
+                `;
+                siswaInfo.classList.remove('hidden');
+            } else {
+                siswaInfo.classList.add('hidden');
+            }
+        });
+    }
+
+    // Dokter selection handler
+    const dokterSelect = document.getElementById('Id_Dokter');
+    const dokterInfo = document.getElementById('dokterInfo');
+    const dokterDetails = document.getElementById('dokterDetails');
+    
+    if (dokterSelect && dokterInfo && dokterDetails) {
+        dokterSelect.addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const text = selectedOption.textContent;
+                const [id, nama] = text.split(' - ');
+                
+                dokterDetails.innerHTML = `
+                    <div class="grid grid-cols-1 gap-1">
+                        <div><strong>ID:</strong> ${id}</div>
+                        <div><strong>Nama:</strong> ${nama}</div>
+                    </div>
+                `;
+                dokterInfo.classList.remove('hidden');
+            } else {
+                dokterInfo.classList.add('hidden');
+            }
+        });
+    }
+
+    // Petugas selection handler
+    const petugasSelect = document.getElementById('NIP');
+    const petugasInfo = document.getElementById('petugasInfo');
+    const petugasDetails = document.getElementById('petugasDetails');
+    
+    if (petugasSelect && petugasInfo && petugasDetails) {
+        petugasSelect.addEventListener('change', function() {
+            if (this.value) {
+                const selectedOption = this.options[this.selectedIndex];
+                const text = selectedOption.textContent;
+                const [nip, nama] = text.split(' - ');
+                
+                petugasDetails.innerHTML = `
+                    <div class="grid grid-cols-1 gap-1">
+                        <div><strong>NIP:</strong> ${nip}</div>
+                        <div><strong>Nama:</strong> ${nama}</div>
+                    </div>
+                `;
+                petugasInfo.classList.remove('hidden');
+            } else {
+                petugasInfo.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Form validation
+    const form = document.getElementById('rekamMedisForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    
+    if (form && submitBtn && submitText) {
+        form.addEventListener('submit', function(event) {
+            const siswaSelect = document.getElementById('Id_Siswa');
+            const dokterSelect = document.getElementById('Id_Dokter');
+            const petugasSelect = document.getElementById('NIP');
+            const keluhanTextarea = document.getElementById('Keluhan_Utama');
+            
+            let isValid = true;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitText.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+            
+            // Check required fields
+            if (siswaSelect && !siswaSelect.value) {
+                markInvalid(siswaSelect, 'Siswa harus dipilih');
+                isValid = false;
+            } else if (siswaSelect) {
+                markValid(siswaSelect);
+            }
+            
+            if (dokterSelect && !dokterSelect.value) {
+                markInvalid(dokterSelect, 'Dokter harus dipilih');
+                isValid = false;
+            } else if (dokterSelect) {
+                markValid(dokterSelect);
+            }
+            
+            if (petugasSelect && !petugasSelect.value) {
+                markInvalid(petugasSelect, 'Petugas UKS harus dipilih');
+                isValid = false;
+            } else if (petugasSelect) {
+                markValid(petugasSelect);
+            }
+            
+            if (keluhanTextarea && !keluhanTextarea.value.trim()) {
+                markInvalid(keluhanTextarea, 'Keluhan Utama harus diisi');
+                isValid = false;
+            } else if (keluhanTextarea) {
+                markValid(keluhanTextarea);
+            }
+            
+            if (!isValid) {
+                event.preventDefault();
+                submitBtn.disabled = false;
+                submitText.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Rekam Medis';
+                
+                // Scroll to first error
+                const firstError = document.querySelector('.text-red-600');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
+    
+    function markInvalid(element, message) {
+        element.classList.add('border-red-500');
+        element.classList.remove('border-gray-300');
+        
+        // Add error message if not exists
+        const parent = element.parentNode.parentNode;
+        let errorElement = parent.querySelector('.text-red-600');
+        if (!errorElement) {
+            errorElement = document.createElement('p');
+            errorElement.className = 'mt-1 text-sm text-red-600';
+            parent.appendChild(errorElement);
+        }
+        errorElement.textContent = message;
+    }
+    
+    function markValid(element) {
+        element.classList.remove('border-red-500');
+        element.classList.add('border-gray-300');
+        
+        // Remove error message if exists
+        const parent = element.parentNode.parentNode;
+        const errorElement = parent.querySelector('.text-red-600');
+        if (errorElement) {
+            errorElement.remove();
+        }
+    }
+
+    // Initialize if there are old values
+    if (siswaSelect && siswaSelect.value) {
+        siswaSelect.dispatchEvent(new Event('change'));
+    }
+    if (dokterSelect && dokterSelect.value) {
+        dokterSelect.dispatchEvent(new Event('change'));
+    }
+    if (petugasSelect && petugasSelect.value) {
+        petugasSelect.dispatchEvent(new Event('change'));
+    }
+    
+    // Initialize character counters
+    if (keluhanTextarea) {
+        keluhanCharCount.textContent = keluhanTextarea.value.length;
+    }
+    if (silsilahTextarea) {
+        silsilahCharCount.textContent = silsilahTextarea.value.length;
+    }
+    
+    // Log user level for debugging
+    console.log('User Level:', '{{ $userLevel }}');
+    console.log('Access Level:', '{{ $isAdmin ? "Admin (Full CRUD)" : ($isPetugas ? "Petugas (CRU)" : "Unknown") }}');
+});
+</script>
+@endpush
 @endsection

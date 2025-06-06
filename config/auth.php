@@ -40,6 +40,29 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        // Guard untuk Siswa
+        'siswa' => [
+            'driver' => 'session',
+            'provider' => 'siswas',
+        ],
+
+        // Guard untuk Siswa
+        'siswa' => [
+            'driver' => 'session',
+            'provider' => 'siswas',
+        ],
+
+        // Guard untuk Dokter
+        'dokter' => [
+            'driver' => 'session',
+            'provider' => 'dokters',
+        ],
+
+        // Guard untuk Petugas UKS
+        'petugas_uks' => [
+            'driver' => 'session',
+            'provider' => 'petugas_uks',
+        ],
     ],
 
     /*
@@ -64,11 +87,24 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
+         // Provider untuk Siswa
+        'siswas' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL_SISWA', App\Models\Siswa::class), // Membaca model dari .env
+        ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        // Provider untuk Dokter
+        'dokters' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL_DOKTER', App\Models\Dokter::class),
+        ],
+
+        // Provider untuk Petugas UKS
+        'petugas_uks' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL_PETUGAS_UKS', App\Models\PetugasUKS::class),
+        ],
+
     ],
 
     /*

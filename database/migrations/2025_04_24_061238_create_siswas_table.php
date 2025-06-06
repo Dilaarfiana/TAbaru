@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('siswas', function (Blueprint $table) {
@@ -15,6 +16,7 @@ return new class extends Migration {
             $table->enum('jenis_kelamin', ['L', 'P'])->nullable();
             $table->date('tanggal_masuk')->nullable()->useCurrent();  // Menggunakan tanggal saat ini jika tidak diisi
             $table->boolean('status_aktif')->default(true);  // Status aktif default true
+            $table->date('tanggal_lulus')->nullable();  // Kolom tanggal lulus yang ditambahkan
             $table->timestamps();  // created_at dan updated_at
         });
     }

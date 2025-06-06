@@ -18,7 +18,8 @@ class CreatePetugasUKSTable extends Migration
             $table->string('nama_petugas_uks', 50);
             $table->text('alamat')->nullable();
             $table->string('no_telp', 15)->nullable();
-            $table->boolean('status_aktif')->default(true);  // Menambahkan nilai default
+            $table->boolean('status_aktif')->default(true);
+            $table->enum('level', ['admin', 'petugas'])->default('petugas'); // Menambahkan field level
             $table->string('password', 255);
             $table->timestamps(); // This creates dibuat_pada and diperbarui_pada
         });

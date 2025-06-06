@@ -10,30 +10,30 @@ class PemeriksaanAwal extends Model
     use HasFactory;
     
     protected $table = 'pemeriksaan_awals';
-    protected $primaryKey = 'Id_PreAwal';
+    protected $primaryKey = 'id_preawal'; // Sesuai dengan migration
     public $incrementing = false;
     protected $keyType = 'string';
     
     protected $fillable = [
-        'Id_PreAwal',
-        'Id_DetPrx',
-        'Pemeriksaan',
-        'Keluhan_Dahulu',
-        'Suhu',
-        'Nadi',
-        'Tegangan',
-        'Pernapasan',
-        'Tipe',
-        'Status_Nyeri',
-        'Karakteristik',
-        'Lokasi',
-        'Durasi',
-        'Frekuensi'
+        'id_preawal',    // Sesuai dengan migration (lowercase)
+        'id_detprx',     // Sesuai dengan migration (lowercase)
+        'pemeriksaan',
+        'keluhan_dahulu',
+        'suhu',
+        'nadi',
+        'tegangan',
+        'pernapasan',
+        'tipe',
+        'status_nyeri',
+        'karakteristik',
+        'lokasi',
+        'durasi',
+        'frekuensi'
     ];
     
     // Relasi dengan DetailPemeriksaan
     public function detailPemeriksaan()
     {
-        return $this->belongsTo(DetailPemeriksaan::class, 'Id_DetPrx', 'Id_DetPrx');
+        return $this->belongsTo(DetailPemeriksaan::class, 'id_detprx', 'id_detprx');
     }
 }

@@ -36,6 +36,11 @@ class PetugasUKSController extends Controller
             $query->where('status_aktif', $request->status);
         }
         
+        // Apply level filter if provided
+        if ($request->has('level') && !empty($request->level)) {
+            $query->where('level', $request->level);
+        }
+        
         // Apply keyword filter if provided (additional search field from filter modal)
         if ($request->has('keyword') && !empty($request->keyword)) {
             $keywordTerm = $request->keyword;
@@ -57,12 +62,18 @@ class PetugasUKSController extends Controller
         $petugasTidakAktif = PetugasUKS::where('status_aktif', 0)->count();
         $petugasMingguan = PetugasUKS::where('created_at', '>=', now()->subWeek())->count();
         
+        // Tambahkan statistik untuk level
+        $petugasAdmin = PetugasUKS::where('level', 'admin')->count();
+        $petugasBiasa = PetugasUKS::where('level', 'petugas')->count();
+        
         return view('petugasuks.index', compact(
             'petugasUKS', 
             'totalPetugas', 
             'petugasAktif', 
             'petugasTidakAktif', 
-            'petugasMingguan'
+            'petugasMingguan',
+            'petugasAdmin',
+            'petugasBiasa'
         ));
     }
 
@@ -90,22 +101,18 @@ class PetugasUKSController extends Controller
             'alamat' => 'nullable|string',
             'no_telp' => 'nullable|string|max:15',
             'status_aktif' => 'boolean',
-            'password' => 'required|string|min:6|confirmed',
+            'level' => 'required|in:admin,petugas',
+            'password' => 'required|string|min:6',
         ]);
-
-        // Format nomor telepon dengan +62 jika ada
-        $no_telp = $request->no_telp;
-        if (!empty($no_telp)) {
-            // Nomor telepon akan diformat oleh mutator di model
-        }
 
         PetugasUKS::create([
             'NIP' => $request->NIP,
             'nama_petugas_uks' => $request->nama_petugas_uks,
             'alamat' => $request->alamat,
-            'no_telp' => $no_telp,
+            'no_telp' => $request->no_telp,
             'status_aktif' => $request->status_aktif ?? true,
-            'password' => Hash::make($request->password),
+            'level' => $request->level ?? 'petugas',
+            'password' => $request->password, // Password hashing handled by model mutator
         ]);
 
         return redirect()->route('petugasuks.index')
@@ -152,24 +159,20 @@ class PetugasUKSController extends Controller
             'alamat' => 'nullable|string',
             'no_telp' => 'nullable|string|max:15',
             'status_aktif' => 'boolean',
-            'password' => 'nullable|string|min:6|confirmed',
+            'level' => 'required|in:admin,petugas',
+            'password' => 'nullable|string|min:6',
         ]);
-
-        // Format nomor telepon dengan +62 jika ada
-        $no_telp = $request->no_telp;
-        if (!empty($no_telp)) {
-            // Nomor telepon akan diformat oleh mutator di model
-        }
 
         $data = [
             'nama_petugas_uks' => $request->nama_petugas_uks,
             'alamat' => $request->alamat,
-            'no_telp' => $no_telp,
+            'no_telp' => $request->no_telp,
             'status_aktif' => $request->status_aktif ?? $petugasUKS->status_aktif,
+            'level' => $request->level ?? $petugasUKS->level,
         ];
 
         if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
+            $data['password'] = $request->password; // Password hashing handled by model mutator
         }
 
         $petugasUKS->update($data);

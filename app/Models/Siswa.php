@@ -30,6 +30,7 @@ class Siswa extends Model
         'jenis_kelamin',
         'tanggal_masuk',
         'status_aktif',
+        'tanggal_lulus',
     ];
     
     // Menggunakan timestamps standar Laravel
@@ -39,6 +40,7 @@ class Siswa extends Model
     protected $casts = [
         'tanggal_lahir' => 'date',
         'tanggal_masuk' => 'date',
+        'tanggal_lulus' => 'date',
         'status_aktif' => 'boolean',
     ];
     
@@ -111,7 +113,7 @@ class Siswa extends Model
         return $query->where('status_aktif', 0);
     }
     
-    // Method untuk mendapatkan kelas melalui relasi detailSiswa - PERBAIKAN
+    // Method untuk mendapatkan kelas melalui relasi detailSiswa
     public function getKelasAttribute()
     {
         if ($this->detailSiswa && $this->detailSiswa->kelas) {
@@ -126,7 +128,7 @@ class Siswa extends Model
         return null;
     }
     
-    // Method untuk mendapatkan jurusan melalui relasi detailSiswa - PERBAIKAN
+    // Method untuk mendapatkan jurusan melalui relasi detailSiswa
     public function getJurusanAttribute()
     {
         // Coba mendapatkan dari relasi jurusan langsung
@@ -282,68 +284,5 @@ class Siswa extends Model
         }
         
         return false;
-    }
-    
-    /**
-     * Memperbarui relasi di semua tabel terkait saat ID siswa berubah
-     * 
-     * @param string $oldId - ID siswa lama
-     * @param string $newId - ID siswa baru
-     * @return bool
-     */
-    public static function updateRelatedTables($oldId, $newId)
-    {
-        try {
-            // Tambahkan logging untuk debugging
-            Log::info("Updating related tables. Old ID: {$oldId}, New ID: {$newId}");
-            
-            // Update di tabel detail_siswas
-            $detailCount = DetailSiswa::where('id_siswa', $oldId)->count();
-            DetailSiswa::where('id_siswa', $oldId)->update(['id_siswa' => $newId]);
-            Log::info("Updated {$detailCount} records in detail_siswas");
-            
-            // Update di tabel orang_tuas
-            if (class_exists('App\Models\OrangTua')) {
-                $orangTuaCount = OrangTua::where('id_siswa', $oldId)->count();
-                OrangTua::where('id_siswa', $oldId)->update(['id_siswa' => $newId]);
-                Log::info("Updated {$orangTuaCount} records in orang_tuas");
-            }
-            
-            // Update di tabel rekam_medis
-            if (class_exists('App\Models\RekamMedis')) {
-                $medisCount = RekamMedis::where('id_siswa', $oldId)->count();
-                RekamMedis::where('id_siswa', $oldId)->update(['id_siswa' => $newId]);
-                Log::info("Updated {$medisCount} records in rekam_medis");
-            }
-            
-            // Update di tabel detail_pemeriksaans
-            if (class_exists('App\Models\DetailPemeriksaan')) {
-                $pemeriksaanCount = DetailPemeriksaan::where('id_siswa', $oldId)->count();
-                DetailPemeriksaan::where('id_siswa', $oldId)->update(['id_siswa' => $newId]);
-                Log::info("Updated {$pemeriksaanCount} records in detail_pemeriksaans");
-            }
-            
-            // Update di tabel pemeriksaan_harians
-            if (class_exists('App\Models\PemeriksaanHarian')) {
-                $harianCount = PemeriksaanHarian::where('id_siswa', $oldId)->count();
-                PemeriksaanHarian::where('id_siswa', $oldId)->update(['id_siswa' => $newId]);
-                Log::info("Updated {$harianCount} records in pemeriksaan_harians");
-            }
-            
-            // Update di tabel reseps
-            if (class_exists('App\Models\Resep')) {
-                $resepCount = Resep::where('id_siswa', $oldId)->count();
-                Resep::where('id_siswa', $oldId)->update(['id_siswa' => $newId]);
-                Log::info("Updated {$resepCount} records in reseps");
-            }
-            
-            // Tambahkan update untuk tabel lain jika ada
-            
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Error saat update tabel terkait: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-            return false;
-        }
     }
 }

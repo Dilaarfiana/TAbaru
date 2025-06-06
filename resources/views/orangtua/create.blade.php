@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
 <div class="p-4 bg-gray-50 min-h-screen">
@@ -7,15 +7,11 @@
         <!-- Header -->
         <div class="bg-white px-6 py-4 border-b flex justify-between items-center">
             <div class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+                <i class="fas fa-user-friends text-blue-500 mr-3 text-xl"></i>
                 <h2 class="text-xl font-medium text-gray-800">Tambah Data Orang Tua</h2>
             </div>
             <a href="{{ route('orangtua.index') }}" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-all duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
+                <i class="fas fa-arrow-left mr-2"></i>
                 Kembali
             </a>
         </div>
@@ -26,9 +22,7 @@
                 <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-md">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
                         </div>
                         <div class="ml-3">
                             <ul class="text-sm text-red-700 list-disc list-inside">
@@ -45,9 +39,7 @@
                 <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-md">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
                         </div>
                         <div class="ml-3">
                             <p class="text-sm text-red-700">{{ session('error') }}</p>
@@ -66,9 +58,7 @@
                         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-100 shadow-sm">
                             <h3 class="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-blue-200 flex items-center">
                                 <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 mr-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                                    <i class="fas fa-info-circle"></i>
                                 </span>
                                 Informasi Dasar
                             </h3>
@@ -80,25 +70,27 @@
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
+                                            <i class="fas fa-user-graduate text-gray-400 group-hover:text-blue-500 transition duration-200"></i>
                                         </div>
                                         <select id="id_siswa" name="id_siswa" required
                                             class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition duration-200 hover:border-blue-300 bg-white appearance-none">
                                             <option value="">-- Pilih Siswa --</option>
                                             @foreach($siswas->sortBy('nama_siswa') as $siswa)
-                                                <option value="{{ $siswa->id_siswa }}" {{ old('id_siswa') == $siswa->id_siswa ? 'selected' : '' }}>
+                                                <option 
+                                                    value="{{ $siswa->id_siswa }}" 
+                                                    data-tanggal="{{ $siswa->tanggal_lahir ? date('dmY', strtotime($siswa->tanggal_lahir)) : '' }}"
+                                                    data-tanggal-format="{{ $siswa->tanggal_lahir ? date('d/m/Y', strtotime($siswa->tanggal_lahir)) : '' }}"
+                                                    {{ old('id_siswa') == $siswa->id_siswa ? 'selected' : '' }}
+                                                >
                                                     {{ $siswa->id_siswa }} - {{ $siswa->nama_siswa }}
                                                 </option>
                                             @endforeach
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
                                         </div>
                                     </div>
+                                    <p class="mt-1 text-xs text-blue-600">Password login akan otomatis dibuat dari tanggal lahir siswa</p>
                                 </div>
 
                                 <div class="group">
@@ -107,9 +99,7 @@
                                     </label>
                                     <div class="relative group">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none group-hover:text-blue-500 transition duration-200">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-                                            </svg>
+                                            <i class="fas fa-id-card text-gray-400 group-hover:text-blue-500 transition duration-200"></i>
                                         </div>
                                         <input type="text" id="id_orang_tua" name="id_orang_tua" value="{{ $nextId ?? old('id_orang_tua') }}" 
                                             class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm transition duration-200 hover:border-blue-300"
@@ -124,28 +114,46 @@
                         <div class="bg-gradient-to-br from-purple-50 to-indigo-50 p-5 rounded-lg border border-purple-100 shadow-sm">
                             <h3 class="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-purple-200 flex items-center">
                                 <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-purple-100 text-purple-600 mr-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
+                                    <i class="fas fa-lock"></i>
                                 </span>
                                 Informasi Akun
                             </h3>
                             
-                            <div class="group">
-                                <label for="password" class="block text-sm font-medium text-gray-700 mb-1 group-hover:text-purple-600 transition duration-200">
-                                    Password
-                                </label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                        </svg>
+                            <div class="space-y-3">
+                                <div class="group">
+                                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1 group-hover:text-purple-600 transition duration-200">
+                                        Password
+                                    </label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-key text-gray-400 group-hover:text-purple-500 transition duration-200"></i>
+                                        </div>
+                                        <input type="password" id="password" name="password" 
+                                            class="pl-10 pr-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition duration-200 hover:border-purple-300"
+                                            placeholder="Otomatis dari tanggal lahir siswa">
+                                        <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center focus:outline-none">
+                                            <i class="fas fa-eye text-gray-400 hover:text-purple-500"></i>
+                                        </button>
                                     </div>
-                                    <input type="password" id="password" name="password"
-                                        class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition duration-200 hover:border-purple-300"
-                                        placeholder="Masukkan password">
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ingin membuat akun</p>
+
+                                <div class="bg-blue-50 p-3 rounded-md border border-blue-100 text-sm">
+                                    <div class="flex">
+                                        <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-2 flex-shrink-0"></i>
+                                        <div>
+                                            <p class="text-blue-800 font-medium text-xs">Password Otomatis</p>
+                                            <p class="text-blue-700 text-xs mt-1">Password akan otomatis dibuat dari tanggal lahir siswa dengan format DDMMYYYY.</p>
+                                            <p id="password-info" class="text-blue-700 text-xs mt-1">Contoh: Jika tanggal lahir siswa adalah 15 Maret 2010, maka password-nya adalah <strong>15032010</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center mt-2">
+                                    <label class="flex items-center text-sm text-gray-600">
+                                        <input type="checkbox" id="use-custom-password" name="use_custom_password" class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500">
+                                        Gunakan password kustom
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -153,9 +161,7 @@
                         <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-lg border border-green-100 shadow-sm">
                             <h3 class="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-green-200 flex items-center">
                                 <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-100 text-green-600 mr-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
+                                    <i class="fas fa-address-book"></i>
                                 </span>
                                 Informasi Kontak
                             </h3>
@@ -167,9 +173,7 @@
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-green-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                            </svg>
+                                            <i class="fas fa-phone text-gray-400 group-hover:text-green-500 transition duration-200"></i>
                                         </div>
                                         <input type="text" id="no_telp" name="no_telp" value="{{ old('no_telp', '+62') }}"
                                             class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm transition duration-200 hover:border-green-300"
@@ -184,10 +188,7 @@
                                     </label>
                                     <div class="relative">
                                         <div class="absolute top-3 left-3 flex items-start pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-green-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
+                                            <i class="fas fa-map-marker-alt text-gray-400 group-hover:text-green-500 transition duration-200"></i>
                                         </div>
                                         <textarea id="alamat" name="alamat" rows="3"
                                             class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm transition duration-200 hover:border-green-300"
@@ -204,9 +205,7 @@
                         <div class="bg-gradient-to-br from-blue-50 to-sky-50 p-5 rounded-lg border border-blue-100 shadow-sm">
                             <h3 class="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-blue-200 flex items-center">
                                 <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 mr-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
+                                    <i class="fas fa-male"></i>
                                 </span>
                                 Data Ayah
                             </h3>
@@ -218,9 +217,7 @@
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
+                                            <i class="fas fa-user text-gray-400 group-hover:text-blue-500 transition duration-200"></i>
                                         </div>
                                         <input type="text" id="nama_ayah" name="nama_ayah" value="{{ old('nama_ayah') }}"
                                             class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition duration-200 hover:border-blue-300"
@@ -234,9 +231,7 @@
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
+                                            <i class="fas fa-calendar-alt text-gray-400 group-hover:text-blue-500 transition duration-200"></i>
                                         </div>
                                         <input type="date" id="tanggal_lahir_ayah" name="tanggal_lahir_ayah" value="{{ old('tanggal_lahir_ayah') }}"
                                             class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition duration-200 hover:border-blue-300">
@@ -249,11 +244,7 @@
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                                                <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                                            </svg>
+                                            <i class="fas fa-graduation-cap text-gray-400 group-hover:text-blue-500 transition duration-200"></i>
                                         </div>
                                         <select id="pendidikan_ayah" name="pendidikan_ayah" 
                                             class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition duration-200 hover:border-blue-300 appearance-none">
@@ -269,9 +260,7 @@
                                             <option value="S3" {{ old('pendidikan_ayah') == 'S3' ? 'selected' : '' }}>S3</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -282,9 +271,7 @@
                                     </label>
                                     <div class="relative">
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                            </svg>
+                                            <i class="fas fa-briefcase text-gray-400 group-hover:text-blue-500 transition duration-200"></i>
                                         </div>
                                         <input type="text" id="pekerjaan_ayah" name="pekerjaan_ayah" value="{{ old('pekerjaan_ayah') }}"
                                             class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition duration-200 hover:border-blue-300"
@@ -298,9 +285,7 @@
                         <div class="bg-gradient-to-br from-pink-50 to-rose-50 p-5 rounded-lg border border-pink-100 shadow-sm">
                             <h3 class="text-md font-semibold text-gray-800 mb-4 pb-2 border-b border-pink-200 flex items-center">
                                 <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-pink-100 text-pink-600 mr-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
+                                <i class="fas fa-female"></i>
                             </span>
                             Data Ibu
                         </h3>
@@ -312,9 +297,7 @@
                                 </label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                        <i class="fas fa-user text-gray-400 group-hover:text-pink-500 transition duration-200"></i>
                                     </div>
                                     <input type="text" id="nama_ibu" name="nama_ibu" value="{{ old('nama_ibu') }}"
                                         class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 shadow-sm transition duration-200 hover:border-pink-300"
@@ -328,9 +311,7 @@
                                 </label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
+                                        <i class="fas fa-calendar-alt text-gray-400 group-hover:text-pink-500 transition duration-200"></i>
                                     </div>
                                     <input type="date" id="tanggal_lahir_ibu" name="tanggal_lahir_ibu" value="{{ old('tanggal_lahir_ibu') }}"
                                         class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 shadow-sm transition duration-200 hover:border-pink-300">
@@ -343,11 +324,7 @@
                                 </label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                                            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                                        </svg>
+                                        <i class="fas fa-graduation-cap text-gray-400 group-hover:text-pink-500 transition duration-200"></i>
                                     </div>
                                     <select id="pendidikan_ibu" name="pendidikan_ibu" 
                                         class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 shadow-sm transition duration-200 hover:border-pink-300 appearance-none">
@@ -363,9 +340,7 @@
                                         <option value="S3" {{ old('pendidikan_ibu') == 'S3' ? 'selected' : '' }}>S3</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                        </svg>
+                                        <i class="fas fa-chevron-down text-gray-400"></i>
                                     </div>
                                 </div>
                             </div>
@@ -376,9 +351,7 @@
                                 </label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-pink-500 transition duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
+                                        <i class="fas fa-briefcase text-gray-400 group-hover:text-pink-500 transition duration-200"></i>
                                     </div>
                                     <input type="text" id="pekerjaan_ibu" name="pekerjaan_ibu" value="{{ old('pekerjaan_ibu') }}"
                                         class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-2 focus:ring-pink-500 focus:border-pink-500 shadow-sm transition duration-200 hover:border-pink-300"
@@ -392,36 +365,30 @@
                     <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-lg border border-amber-100 shadow-sm">
                         <h3 class="text-md font-semibold text-gray-800 mb-2 flex items-center">
                             <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-amber-100 text-amber-600 mr-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-info-circle"></i>
                             </span>
                             Informasi Penting
                         </h3>
                         
                         <div class="ml-10 text-sm text-gray-600 space-y-2">
                             <p class="flex items-start">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-check-circle text-amber-500 mr-2 mt-0.5 flex-shrink-0"></i>
                                 Kolom bertanda <span class="text-red-500 font-medium">*</span> wajib diisi
                             </p>
                             <p class="flex items-start">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-check-circle text-amber-500 mr-2 mt-0.5 flex-shrink-0"></i>
                                 ID Orang Tua dibuat otomatis
                             </p>
                             <p class="flex items-start">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Isikan password jika ingin membuat akun login untuk orang tua
+                                <i class="fas fa-check-circle text-amber-500 mr-2 mt-0.5 flex-shrink-0"></i>
+                                Password default menggunakan tanggal lahir siswa (format: DDMMYYYY)
                             </p>
                             <p class="flex items-start">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <i class="fas fa-check-circle text-amber-500 mr-2 mt-0.5 flex-shrink-0"></i>
+                                Centang "Gunakan password kustom" untuk mengganti password default
+                            </p>
+                            <p class="flex items-start">
+                                <i class="fas fa-check-circle text-amber-500 mr-2 mt-0.5 flex-shrink-0"></i>
                                 Data yang telah disimpan dapat diubah melalui menu edit
                             </p>
                         </div>
@@ -433,9 +400,7 @@
                 <div class="mt-8 border-t pt-6 flex justify-between items-center">
                     <div class="text-xs text-gray-500 italic">
                         <span class="inline-flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
+                            <i class="fas fa-lock text-gray-400 mr-1"></i>
                             Data disimpan dengan aman
                         </span>
                     </div>
@@ -443,16 +408,12 @@
                     <div class="flex space-x-3">
                         <button type="button" onclick="window.location.href='{{ route('orangtua.index') }}'" 
                             class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
-                            <svg class="mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
+                            <i class="fas fa-times mr-2 text-gray-500"></i>
                             Batal
                         </button>
                         <button type="submit" 
                             class="inline-flex items-center px-5 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
-                            <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
+                            <i class="fas fa-save mr-2"></i>
                             Simpan Data
                         </button>
                     </div>
@@ -464,6 +425,86 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Get references to the DOM elements
+        const siswaSelect = document.getElementById('id_siswa');
+        const passwordInput = document.getElementById('password');
+        const passwordInfo = document.getElementById('password-info');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const useCustomPasswordCheckbox = document.getElementById('use-custom-password');
+        
+        // Function to get formatted date text
+        function formatDateText(date) {
+            if (!date) return '';
+            const parts = date.split('/');
+            if (parts.length !== 3) return date;
+            
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const day = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const year = parts[2];
+            
+            return `${day} ${months[month]} ${year}`;
+        }
+        
+        // Function to set password based on selected student's birthdate
+        function setPasswordFromBirthdate() {
+            const selectedOption = siswaSelect.options[siswaSelect.selectedIndex];
+            const birthdate = selectedOption.getAttribute('data-tanggal');
+            const birthdateFormat = selectedOption.getAttribute('data-tanggal-format');
+            
+            if (birthdate && !useCustomPasswordCheckbox.checked) {
+                passwordInput.value = birthdate;
+                passwordInput.readOnly = true;
+                passwordInput.classList.add('bg-blue-50', 'border-blue-300');
+                
+                if (birthdateFormat) {
+                    const formattedDate = formatDateText(birthdateFormat);
+                    passwordInfo.innerHTML = `Password: <strong>${birthdate}</strong> (dari tanggal lahir siswa: ${formattedDate})`;
+                }
+            } else if (!useCustomPasswordCheckbox.checked) {
+                passwordInput.value = '';
+                passwordInput.readOnly = true;
+                passwordInput.placeholder = 'Tanggal lahir siswa tidak tersedia';
+                passwordInput.classList.remove('bg-blue-50', 'border-blue-300');
+                passwordInfo.innerHTML = 'Password tidak dapat dibuat otomatis karena tanggal lahir siswa tidak tersedia';
+            }
+        }
+        
+        // Initial setup for password field
+        setPasswordFromBirthdate();
+        
+        // Update password when student selection changes
+        siswaSelect.addEventListener('change', setPasswordFromBirthdate);
+        
+        // Toggle password visibility
+        togglePasswordBtn.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Update icon
+            const icon = this.querySelector('i');
+            if (type === 'text') {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+        
+        // Toggle custom password
+        useCustomPasswordCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                passwordInput.readOnly = false;
+                passwordInput.value = '';
+                passwordInput.placeholder = 'Masukkan password kustom';
+                passwordInput.classList.remove('bg-blue-50', 'border-blue-300');
+                passwordInput.focus();
+            } else {
+                setPasswordFromBirthdate();
+            }
+        });
+        
         // Animasi label saat hover dan focus pada grup
         const groups = document.querySelectorAll('.group');
         groups.forEach(group => {

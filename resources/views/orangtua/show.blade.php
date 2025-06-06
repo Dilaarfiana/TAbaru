@@ -1,11 +1,11 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
 <div class="p-4 bg-gray-50 min-h-screen">
     <!-- Detail Card -->
     <div class="max-w-5xl mx-auto">
-        <!-- Header dengan gradient -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-lg px-6 py-5 flex justify-between items-center">
+        <!-- Header dengan warna solid -->
+        <div class="bg-blue-600 rounded-t-lg px-6 py-5 flex justify-between items-center">
             <div class="flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -35,7 +35,7 @@
         <div class="bg-white rounded-b-lg shadow-lg overflow-hidden p-6">
             <!-- Information Card for Siswa -->
             <div class="mb-8 border border-blue-100 rounded-lg overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+                <div class="bg-blue-500 px-4 py-3">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -43,7 +43,7 @@
                         <h3 class="text-md font-semibold text-white">Informasi Siswa</h3>
                     </div>
                 </div>
-                <div class="p-4 bg-gradient-to-b from-blue-50 to-white">
+                <div class="p-4 bg-white">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex">
                             <div class="w-24 text-sm font-medium text-gray-500">ID Siswa</div>
@@ -60,7 +60,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <!-- Information Card for Ayah -->
                 <div class="border border-blue-100 rounded-lg overflow-hidden">
-                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
+                    <div class="bg-blue-500 px-4 py-3">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -68,7 +68,7 @@
                             <h3 class="text-md font-semibold text-white">Data Ayah</h3>
                         </div>
                     </div>
-                    <div class="p-4 bg-gradient-to-b from-blue-50 to-white">
+                    <div class="p-4 bg-white">
                         <div class="space-y-4">
                             <div class="flex items-center">
                                 <div class="w-32 text-sm font-medium text-gray-500">Nama</div>
@@ -92,7 +92,7 @@
 
                 <!-- Information Card for Ibu -->
                 <div class="border border-pink-100 rounded-lg overflow-hidden">
-                    <div class="bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-3">
+                    <div class="bg-pink-500 px-4 py-3">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -100,7 +100,7 @@
                             <h3 class="text-md font-semibold text-white">Data Ibu</h3>
                         </div>
                     </div>
-                    <div class="p-4 bg-gradient-to-b from-pink-50 to-white">
+                    <div class="p-4 bg-white">
                         <div class="space-y-4">
                             <div class="flex items-center">
                                 <div class="w-32 text-sm font-medium text-gray-500">Nama</div>
@@ -125,7 +125,7 @@
 
             <!-- Information Card for Kontak -->
             <div class="border border-green-100 rounded-lg overflow-hidden">
-                <div class="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-3">
+                <div class="bg-green-500 px-4 py-3">
                     <div class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -133,7 +133,7 @@
                         <h3 class="text-md font-semibold text-white">Informasi Kontak</h3>
                     </div>
                 </div>
-                <div class="p-4 bg-gradient-to-b from-green-50 to-white">
+                <div class="p-4 bg-white">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex items-start md:col-span-2">
                             <div class="w-32 text-sm font-medium text-gray-500">Alamat</div>

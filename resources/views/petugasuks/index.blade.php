@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
 <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -79,13 +79,6 @@
                     <i class="fas fa-filter mr-2 text-blue-500"></i> Filter
                 </a>
                 
-                <!-- Export -->
-                <a 
-                    href="{{ route('petugasuks.export', request()->query()) }}" 
-                    class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center"
-                >
-                    <i class="fas fa-download mr-2 text-green-500"></i> Export
-                </a>
             </div>
         </div>
     </div>
@@ -116,6 +109,11 @@
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         <div class="flex items-center space-x-1">
                             <span>Status</span>
+                        </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <div class="flex items-center space-x-1">
+                            <span>Level</span>
                         </div>
                     </th>
                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -160,6 +158,17 @@
                                 </span>
                             @endif
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            @if($petugas->level == 'admin')
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    <i class="fas fa-user-shield mr-1"></i> Admin
+                                </span>
+                            @else
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <i class="fas fa-user-nurse mr-1"></i> Petugas
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                             <div class="flex justify-center space-x-1">
                                 <a href="{{ route('petugasuks.show', $petugas->NIP) }}" class="text-white bg-blue-500 hover:bg-blue-600 rounded-md p-2 transition-colors duration-200" title="Detail">
@@ -181,7 +190,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
+                        <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <div class="bg-gray-100 rounded-full p-5 mb-4">
                                     <i class="fas fa-folder-open text-4xl text-gray-400"></i>
@@ -237,6 +246,16 @@
                 </select>
             </div>
             
+            <!-- Filter Level -->
+            <div class="mb-4">
+                <label for="level" class="block text-sm font-medium text-gray-700 mb-1">Level/Hak Akses</label>
+                <select id="level" name="level" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Semua Level</option>
+                    <option value="admin" {{ request('level') == 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="petugas" {{ request('level') == 'petugas' ? 'selected' : '' }}>Petugas</option>
+                </select>
+            </div>
+            
             <!-- Kata Kunci Pencarian -->
             <div class="mb-4">
                 <label for="keyword" class="block text-sm font-medium text-gray-700 mb-1">Kata Kunci</label>
@@ -247,7 +266,7 @@
             
             <!-- Tombol Filter -->
             <div class="flex justify-end space-x-2">
-                @if(request()->anyFilled(['status', 'keyword']))
+                @if(request()->anyFilled(['status', 'keyword', 'level']))
                     <a href="{{ route('petugasuks.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md">
                         Reset
                     </a>
@@ -364,7 +383,7 @@
                     const newRow = document.createElement('tr');
                     newRow.id = 'noDataFound';
                     newRow.innerHTML = `
-                        <td colspan="5" class="px-6 py-8 text-center">
+                        <td colspan="6" class="px-6 py-8 text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <div class="bg-gray-100 rounded-full p-4 mb-3">
                                     <i class="fas fa-search text-3xl text-gray-400"></i>

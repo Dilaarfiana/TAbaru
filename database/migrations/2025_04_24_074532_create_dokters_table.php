@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('Spesialisasi', 25)->nullable();
             $table->string('No_Telp', 15)->nullable();
             $table->text('Alamat')->nullable();
+            $table->boolean('status_aktif')->default(true);
             $table->string('password')->nullable();
             $table->timestamps();
         });

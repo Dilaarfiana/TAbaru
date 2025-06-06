@@ -1,7 +1,149 @@
-@extends('layouts.admin')
+{{-- File: resources/views/siswa/create.blade.php --}}
+{{-- HANYA ADMIN YANG BOLEH AKSES CREATE SISWA --}}
+@extends('layouts.app')
 
 @section('content')
+@php
+    $userLevel = session('user_level');
+    $isAdmin = $userLevel === 'admin';
+    $isPetugas = $userLevel === 'petugas';
+    $isDokter = $userLevel === 'dokter';
+    $isOrangTua = $userLevel === 'orang_tua';
+@endphp
+
+{{-- BLOCK ACCESS FOR NON-ADMIN USERS --}}
+@if(!$isAdmin)
+    <div class="p-4 bg-gray-50 min-h-screen">
+        <div class="max-w-5xl mx-auto bg-white rounded-md shadow">
+            <div class="bg-red-50 border-l-4 border-red-500 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-red-800">Akses Ditolak</h3>
+                        @if($isOrangTua)
+                            <p class="text-sm text-red-700 mt-2">
+                                Anda tidak memiliki izin untuk menambah data siswa. 
+                                Sebagai orang tua, Anda hanya dapat mengakses dan mengedit data siswa Anda sendiri.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{{ route('orangtua.siswa.show') }}" 
+                                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                                    <i class="fas fa-child mr-2"></i>
+                                    Lihat Data Siswa Saya
+                                </a>
+                                <a href="{{ route('dashboard.orangtua') }}" 
+                                   class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                                    <i class="fas fa-home mr-2"></i>
+                                    Kembali ke Dashboard
+                                </a>
+                            </div>
+                        @elseif($isPetugas)
+                            <p class="text-sm text-red-700 mt-2">
+                                Anda tidak memiliki izin untuk menambah data siswa baru. 
+                                Sebagai petugas, Anda hanya dapat melihat dan mengedit data siswa yang sudah ada.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{{ route('petugas.siswa.index') }}" 
+                                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                                    <i class="fas fa-user-graduate mr-2"></i>
+                                    Lihat Daftar Siswa
+                                </a>
+                                <a href="{{ route('dashboard.petugas') }}" 
+                                   class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                                    <i class="fas fa-home mr-2"></i>
+                                    Kembali ke Dashboard
+                                </a>
+                            </div>
+                        @elseif($isDokter)
+                            <p class="text-sm text-red-700 mt-2">
+                                Anda tidak memiliki izin untuk menambah data siswa baru. 
+                                Sebagai dokter, Anda hanya dapat melihat data siswa untuk keperluan medis.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{{ route('dokter.siswa.index') }}" 
+                                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                                    <i class="fas fa-user-graduate mr-2"></i>
+                                    Lihat Daftar Siswa
+                                </a>
+                                <a href="{{ route('dashboard.dokter') }}" 
+                                   class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                                    <i class="fas fa-home mr-2"></i>
+                                    Kembali ke Dashboard
+                                </a>
+                            </div>
+                        @else
+                            <p class="text-sm text-red-700 mt-2">
+                                Anda tidak memiliki izin untuk mengakses halaman ini.
+                            </p>
+                            <div class="mt-4">
+                                <a href="{{ route('dashboard') }}" 
+                                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                                    <i class="fas fa-home mr-2"></i>
+                                    Kembali ke Dashboard
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+    // Auto redirect berdasarkan role
+    setTimeout(function() {
+        @if($isOrangTua)
+            window.location.href = '{{ route("orangtua.siswa.show") }}';
+        @elseif($isPetugas)
+            window.location.href = '{{ route("petugas.siswa.index") }}';
+        @elseif($isDokter)
+            window.location.href = '{{ route("dokter.siswa.index") }}';
+        @else
+            window.location.href = '{{ route("dashboard") }}';
+        @endif
+    }, 3000);
+    
+    // Show countdown
+    let countdown = 3;
+    const countdownElement = document.createElement('div');
+    countdownElement.className = 'mt-4 text-sm text-red-600';
+    countdownElement.innerHTML = '<i class="fas fa-clock mr-1"></i>Akan dialihkan dalam <span id="countdown">3</span> detik...';
+    document.querySelector('.border-red-500 .ml-4').appendChild(countdownElement);
+    
+    const countdownTimer = setInterval(function() {
+        countdown--;
+        document.getElementById('countdown').textContent = countdown;
+        if (countdown <= 0) {
+            clearInterval(countdownTimer);
+        }
+    }, 1000);
+    </script>
+    @endpush
+
+@else
+{{-- NORMAL CONTENT FOR ADMIN ONLY --}}
+
 <div class="p-4 bg-gray-50 min-h-screen">
+    <!-- Admin Access Indicator -->
+    <div class="max-w-5xl mx-auto mb-4">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-user-shield text-blue-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        <strong>Akses Administrator:</strong> Anda dapat menambah siswa baru ke sistem. 
+                        Setelah siswa ditambahkan, lakukan alokasi ke jurusan dan kelas melalui menu Alokasi.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Form Card -->
     <div class="max-w-5xl mx-auto bg-white rounded-md shadow">
         <!-- Header -->
@@ -11,6 +153,9 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 <h2 class="text-xl font-medium text-gray-800">Tambah Siswa Baru</h2>
+                <span class="ml-3 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                    <i class="fas fa-user-shield mr-1"></i>Admin Only
+                </span>
             </div>
             <a href="{{ route('siswa.index') }}" class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,6 +397,28 @@
                             Default: Status "Aktif" untuk siswa baru
                         </p>
                     </div>
+                    
+                    <!-- Field Tanggal Lulus -->
+                    <div>
+                        <label for="tanggal_lulus" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tanggal Lulus
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <input type="date" 
+                                id="tanggal_lulus" 
+                                name="tanggal_lulus" 
+                                value="{{ old('tanggal_lulus') }}" 
+                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_lulus') border-red-300 @enderror">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Kosongkan jika siswa belum lulus
+                        </p>
+                    </div>
                 </div>
                 
                 <!-- Form Buttons -->
@@ -295,6 +462,7 @@
                             <li>Nama Siswa sebaiknya diisi dengan nama lengkap sesuai dokumen resmi.</li>
                             <li>Tanggal Lahir membantu dalam perhitungan usia dan administrasi lainnya.</li>
                             <li>Tanggal Masuk menunjukkan kapan siswa mulai terdaftar di sekolah.</li>
+                            <li>Tanggal Lulus diisi jika siswa sudah lulus atau tidak aktif.</li>
                             <li>Status Aktif default adalah "Aktif" untuk siswa baru yang mendaftar.</li>
                             <li>Data yang diisi dengan lengkap akan memudahkan dalam pencarian dan pelaporan.</li>
                         </ul>
@@ -307,8 +475,24 @@
 
 @push('scripts')
 <script>
-    // Script untuk form dan handling radio button
+    // Double check access level - prevent any bypass attempts
     document.addEventListener('DOMContentLoaded', function() {
+        const userLevel = '{{ $userLevel }}';
+        if (userLevel !== 'admin') {
+            console.warn('Access violation detected: Non-admin trying to access create student form');
+            @if($isOrangTua)
+                window.location.href = '{{ route("orangtua.siswa.show") }}';
+            @elseif($isPetugas)
+                window.location.href = '{{ route("petugas.siswa.index") }}';
+            @elseif($isDokter)
+                window.location.href = '{{ route("dokter.siswa.index") }}';
+            @else
+                window.location.href = '{{ route("dashboard") }}';
+            @endif
+            return;
+        }
+
+        // Script untuk form dan handling radio button
         // Autoformat nama siswa (kapitalisasi setiap kata)
         const namaSiswaInput = document.getElementById('nama_siswa');
         if (namaSiswaInput) {
@@ -354,7 +538,33 @@
         // Listener untuk perubahan radio
         document.getElementById('status_aktif_1').addEventListener('change', updateRadioStatus);
         document.getElementById('status_aktif_0').addEventListener('change', updateRadioStatus);
-    });
+        
+        // Toggle field tanggal lulus berdasarkan status aktif
+        const radioAktif = document.getElementById('status_aktif_1');
+        const radioNonaktif = document.getElementById('status_aktif_0');
+        const tanggalLulusField = document.getElementById('tanggal_lulus');
+        
+        function updateTanggalLulusVisibility() {
+            if (radioNonaktif.checked) {
+                tanggalLulusField.required = true;
+                tanggalLulusField.parentElement.parentElement.classList.remove('opacity-50');
+                tanggalLulusField.parentElement.parentElement.querySelector('p').textContent = 'Wajib diisi jika status tidak aktif';
+            } else {
+                tanggalLulusField.required = false;
+                tanggalLulusField.parentElement.parentElement.classList.add('opacity-50');
+                tanggalLulusField.parentElement.parentElement.querySelector('p').textContent = 'Kosongkan jika siswa belum lulus';
+            }
+        }
+        
+        // Set visibility awal
+        updateTanggalLulusVisibility();
+        
+        // Listener untuk perubahan radio yang mempengaruhi tanggal lulus
+       radioAktif.addEventListener('change', updateTanggalLulusVisibility);
+       radioNonaktif.addEventListener('change', updateTanggalLulusVisibility);
+   });
 </script>
 @endpush
+
+@endif {{-- End of access control for non-admin --}}
 @endsection

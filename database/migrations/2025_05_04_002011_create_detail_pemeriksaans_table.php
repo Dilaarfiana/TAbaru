@@ -12,18 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('detail_pemeriksaans', function (Blueprint $table) {
-            $table->string('Id_DetPrx', 5)->primary();
-            $table->dateTime('Tanggal_Jam');
-            $table->text('Hasil_Pemeriksaan')->nullable();
-            $table->string('Id_Siswa', 10);
-            $table->string('Id_Dokter', 5);
-            $table->string('NIP', 18);
+            $table->string('id_detprx', 5)->primary();
+            $table->dateTime('tanggal_jam');
+            $table->string('id_siswa', 10);
+            $table->enum('status_pemeriksaan', ['belum lengkap', 'lengkap']); // Kolom yang hilang
+            $table->string('id_dokter', 5);
+            $table->string('nip', 18);
             $table->timestamps();
-            
-            // Foreign keys yang benar
-            $table->foreign('Id_Siswa')->references('id_siswa')->on('siswas')->onDelete('cascade');
-            $table->foreign('Id_Dokter')->references('Id_Dokter')->on('dokters')->onDelete('cascade');
-            $table->foreign('NIP')->references('NIP')->on('petugas_uks')->onDelete('cascade'); // Ubah ke petugas_uks
+                        
+            $table->foreign('id_siswa')->references('id_siswa')->on('siswas')->onDelete('cascade');
+            $table->foreign('id_dokter')->references('id_dokter')->on('dokters')->onDelete('cascade');
+            $table->foreign('nip')->references('nip')->on('petugas_uks')->onDelete('cascade');
         });
     }
 

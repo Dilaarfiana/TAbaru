@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 
 class PetugasUKS extends Model
 {
@@ -14,13 +15,14 @@ class PetugasUKS extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     
-    // Define fillable fields with correct column names
+    // Define fillable fields including the missing 'level' field
     protected $fillable = [
         'NIP',
         'nama_petugas_uks',
         'alamat',
         'no_telp',
         'status_aktif',
+        'level',
         'password'
     ];
     
@@ -29,28 +31,39 @@ class PetugasUKS extends Model
         'status_aktif' => 'boolean',
     ];
     
-    // Mutator untuk no_telp untuk menambahkan +62 jika tidak ada
+    // Mutator for password to ensure it's hashed
+    public function setPasswordAttribute($value)
+    {
+        // Only hash the password if it's not already hashed
+        if ($value && !Hash::info($value)['algo']) {
+            $this->attributes['password'] = Hash::make($value);
+        } else {
+            $this->attributes['password'] = $value;
+        }
+    }
+    
+    // Mutator for no_telp to add +62 if not present
     public function setNoTelpAttribute($value)
     {
-        // Jika nomor tidak diisi, simpan sebagai null
+        // If number is empty, save as null
         if (empty($value)) {
             $this->attributes['no_telp'] = null;
             return;
         }
         
-        // Jika nomor sudah diawali dengan +62, gunakan langsung
+        // If number already starts with +62, use directly
         if (strpos($value, '+62') === 0) {
             $this->attributes['no_telp'] = $value;
             return;
         }
         
-        // Jika nomor diawali dengan 0, ganti dengan +62
+        // If number starts with 0, replace with +62
         if (strpos($value, '0') === 0) {
             $this->attributes['no_telp'] = '+62' . substr($value, 1);
             return;
         }
         
-        // Untuk kasus lainnya, tambahkan +62 di depan
+        // For other cases, add +62 in front
         $this->attributes['no_telp'] = '+62' . $value;
     }
     

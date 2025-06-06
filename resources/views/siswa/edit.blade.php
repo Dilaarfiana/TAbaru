@@ -1,6 +1,80 @@
-@extends('layouts.admin')
+{{-- File: resources/views/siswa/edit.blade.php --}}
+{{-- ADMIN: FULL EDIT, PETUGAS: LIMITED EDIT, ORANG TUA: MINIMAL EDIT, DOKTER: NO ACCESS --}}
+@extends('layouts.app')
 
 @section('content')
+@php
+    $userLevel = session('user_level');
+    $isAdmin = $userLevel === 'admin';
+    $isPetugas = $userLevel === 'petugas';
+    $isDokter = $userLevel === 'dokter';
+    $isOrangTua = $userLevel === 'orang_tua';
+    
+    // Block access for dokter completely
+    if ($isDokter) {
+        abort(403, 'Dokter tidak memiliki akses untuk mengedit data siswa.');
+    }
+    
+    // For orang tua, check if they're editing their own child's data
+    if ($isOrangTua) {
+        $siswaId = session('siswa_id');
+        if (!$siswaId || $siswa->id_siswa !== $siswaId) {
+            abort(403, 'Anda hanya dapat mengedit data siswa Anda sendiri.');
+        }
+    }
+    
+    // Define routes based on user role
+    if ($isAdmin) {
+        $baseRoute = 'siswa';
+        $indexRoute = 'siswa.index';
+        $updateRoute = 'siswa.update';
+    } elseif ($isPetugas) {
+        $baseRoute = 'petugas.siswa';
+        $indexRoute = 'petugas.siswa.index';
+        $updateRoute = 'petugas.siswa.update';
+    } else { // orang_tua
+        $baseRoute = 'orangtua.siswa';
+        $indexRoute = 'orangtua.siswa.show';
+        $updateRoute = 'orangtua.siswa.update';
+    }
+@endphp
+
+{{-- BLOCK ACCESS FOR DOKTER --}}
+@if($isDokter)
+    <div class="p-4 bg-gray-50 min-h-screen">
+        <div class="max-w-5xl mx-auto bg-white rounded-md shadow">
+            <div class="bg-red-50 border-l-4 border-red-500 p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-red-800">Akses Ditolak</h3>
+                        <p class="text-sm text-red-700 mt-2">
+                            Sebagai dokter, Anda tidak memiliki izin untuk mengedit data siswa. 
+                            Anda hanya dapat melihat data siswa untuk keperluan medis.
+                        </p>
+                        <div class="mt-4">
+                            <a href="{{ route('dokter.siswa.index') }}" 
+                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
+                                <i class="fas fa-user-graduate mr-2"></i>
+                                Lihat Daftar Siswa
+                            </a>
+                            <a href="{{ route('dashboard.dokter') }}" 
+                               class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+                                <i class="fas fa-home mr-2"></i>
+                                Kembali ke Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@else
+{{-- NORMAL CONTENT FOR ADMIN, PETUGAS, AND ORANG TUA --}}
+
 <div class="p-4 bg-gray-50 min-h-screen">
     <!-- Form Card -->
     <div class="max-w-5xl mx-auto bg-white rounded-md shadow">
@@ -10,13 +84,36 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                <h2 class="text-xl font-medium text-gray-800">Edit Data Siswa</h2>
+                <h2 class="text-xl font-medium text-gray-800">
+                    @if($isOrangTua)
+                        Edit Data Siswa Saya
+                    @else
+                        Edit Data Siswa
+                    @endif
+                    @if($isOrangTua)
+                        <span class="ml-3 px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
+                            <i class="fas fa-users mr-1"></i>Akses Orang Tua
+                        </span>
+                    @elseif($isPetugas)
+                        <span class="ml-3 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+                            <i class="fas fa-user-tie mr-1"></i>Akses Petugas
+                        </span>
+                    @elseif($isAdmin)
+                        <span class="ml-3 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                            <i class="fas fa-user-shield mr-1"></i>Akses Admin
+                        </span>
+                    @endif
+                </h2>
             </div>
-            <a href="{{ route('siswa.index') }}" class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
+            <a href="{{ route($indexRoute) }}" class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Kembali
+                @if($isOrangTua)
+                    Kembali ke Profil
+                @else
+                    Kembali
+                @endif
             </a>
         </div>
 
@@ -40,6 +137,38 @@
                 </div>
             @endif
             
+            <!-- Access Level Info -->
+            @if($isOrangTua)
+            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-purple-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-purple-700">
+                            <strong>Akses Orang Tua:</strong> Anda dapat mengedit data pribadi siswa Anda yang terbatas.
+                            Data yang dapat diubah: nama dan tempat/tanggal lahir saja. 
+                            Untuk perubahan data lainnya, silakan hubungi sekolah.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @elseif($isPetugas)
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-yellow-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            <strong>Akses Petugas:</strong> Anda dapat mengedit data dasar siswa, namun tidak dapat mengubah status aktif atau tanggal lulus.
+                            Data yang dapat diubah: nama, tempat/tanggal lahir, jenis kelamin, dan tanggal masuk.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
             <!-- Info Box -->
             <div class="bg-blue-50 p-4 rounded-lg mb-6">
                 <div class="flex">
@@ -50,41 +179,46 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-sm text-blue-700">
-                            Anda sedang mengubah data siswa dengan ID <span class="font-mono font-medium">{{ $siswa->id_siswa }}</span>. 
-                            @php
-                                // Cek apakah ID sesuai format baru
-                                $idFormat = '';
-                                if (strlen($siswa->id_siswa) >= 6) {
-                                    if (substr($siswa->id_siswa, 0, 1) == '6') {
-                                        if ($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan) {
-                                            $idFormat = 'Sudah dialokasi ke jurusan';
+                            @if($isOrangTua)
+                                Anda sedang mengubah data siswa Anda dengan ID <span class="font-mono font-medium">{{ $siswa->id_siswa }}</span>. 
+                                Pastikan data yang diubah sudah benar sebelum menyimpan. Perubahan akan dicatat dalam sistem.
+                            @else
+                                Anda sedang mengubah data siswa dengan ID <span class="font-mono font-medium">{{ $siswa->id_siswa }}</span>. 
+                                @php
+                                    // Cek apakah ID sesuai format baru
+                                    $idFormat = '';
+                                    if (strlen($siswa->id_siswa) >= 6) {
+                                        if (substr($siswa->id_siswa, 0, 1) == '6') {
+                                            if ($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan) {
+                                                $idFormat = 'Sudah dialokasi ke jurusan';
+                                            } else {
+                                                $idFormat = 'Belum dialokasi ke jurusan';
+                                            }
                                         } else {
-                                            $idFormat = 'Belum dialokasi ke jurusan';
+                                            $idFormat = 'Format ID lama';
                                         }
-                                    } else {
-                                        $idFormat = 'Format ID lama';
                                     }
-                                }
-                            @endphp
-                            @if($idFormat)
-                                <span class="font-medium text-{{ $idFormat == 'Format ID lama' ? 'orange' : ($idFormat == 'Sudah dialokasi ke jurusan' ? 'green' : 'yellow') }}-600">
-                                    ({{ $idFormat }})
-                                </span>
+                                @endphp
+                                @if($idFormat)
+                                    <span class="font-medium text-{{ $idFormat == 'Format ID lama' ? 'orange' : ($idFormat == 'Sudah dialokasi ke jurusan' ? 'green' : 'yellow') }}-600">
+                                        ({{ $idFormat }})
+                                    </span>
+                                @endif
+                                <br>
+                                Pastikan data yang diubah sudah benar sebelum menyimpan.
                             @endif
-                            <br>
-                            Pastikan data yang diubah sudah benar sebelum menyimpan.
                             Data yang wajib diisi ditandai dengan <span class="text-red-500">*</span>.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <form action="{{ route('siswa.update', $siswa->id_siswa) }}" method="POST">
+            <form action="{{ route($updateRoute, $siswa->id_siswa) }}" method="POST">
                 @csrf
                 @method('PUT')
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                    <!-- ID Siswa (read-only) -->
+                    <!-- ID Siswa (read-only for all) -->
                     <div>
                         <label for="id_siswa_display" class="block text-sm font-medium text-gray-700 mb-1">
                             ID Siswa
@@ -102,19 +236,11 @@
                                 readonly disabled>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">
-                            @if(substr($siswa->id_siswa, 0, 1) == '6')
-                                @if($siswa->detailSiswa && $siswa->detailSiswa->kode_jurusan)
-                                    ID siswa dengan format: 6 + kode jurusan + tahun (yy) + nomor urut (001)
-                                @else
-                                    ID siswa dengan format: 6 + tahun (yy) + nomor urut (001)
-                                @endif
-                            @else
-                                ID siswa dengan format lama. Akan diperbarui saat alokasi.
-                            @endif
+                            ID siswa tidak dapat diubah
                         </p>
                     </div>
                     
-                    <!-- Nama Siswa -->
+                    <!-- Nama Siswa - Editable for all roles -->
                     <div>
                         <label for="nama_siswa" class="block text-sm font-medium text-gray-700 mb-1">
                             Nama Siswa <span class="text-red-500">*</span>
@@ -136,7 +262,7 @@
                         </div>
                     </div>
 
-                    <!-- Tempat Lahir -->
+                    <!-- Tempat Lahir - Editable for all roles -->
                     <div>
                         <label for="tempat_lahir" class="block text-sm font-medium text-gray-700 mb-1">
                             Tempat Lahir
@@ -158,7 +284,7 @@
                         </div>
                     </div>
                     
-                    <!-- Tanggal Lahir -->
+                    <!-- Tanggal Lahir - Editable for all roles -->
                     <div>
                         <label for="tanggal_lahir" class="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Lahir
@@ -178,11 +304,40 @@
                         </div>
                     </div>
                     
-                    <!-- Jenis Kelamin -->
+                    <!-- Jenis Kelamin - Admin & Petugas can edit, Orang Tua read-only -->
                     <div>
                         <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700 mb-1">
                             Jenis Kelamin
                         </label>
+                        @if($isOrangTua)
+                        <!-- Read-only for orang tua -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                @if($siswa->jenis_kelamin == 'L')
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                @elseif($siswa->jenis_kelamin == 'P')
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                @else
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                @endif
+                            </div>
+                            <input type="text" 
+                                value="{{ $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : ($siswa->jenis_kelamin == 'P' ? 'Perempuan' : 'Tidak diset') }}" 
+                                class="pl-10 block w-full bg-gray-50 border border-gray-300 rounded-md h-10 focus:ring-0 focus:outline-none"
+                                readonly disabled>
+                            <input type="hidden" name="jenis_kelamin" value="{{ $siswa->jenis_kelamin }}">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Hubungi sekolah untuk mengubah jenis kelamin
+                        </p>
+                        @else
+                        <!-- Editable for admin and petugas -->
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -202,13 +357,33 @@
                                 </svg>
                             </div>
                         </div>
+                        @endif
                     </div>
                     
-                    <!-- Tanggal Masuk -->
+                    <!-- Tanggal Masuk - Admin & Petugas can edit, Orang Tua read-only -->
                     <div>
                         <label for="tanggal_masuk" class="block text-sm font-medium text-gray-700 mb-1">
                             Tanggal Masuk
                         </label>
+                        @if($isOrangTua)
+                        <!-- Read-only for orang tua -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                value="{{ $siswa->tanggal_masuk ? \Carbon\Carbon::parse($siswa->tanggal_masuk)->format('d F Y') : 'Tidak diset' }}" 
+                                class="pl-10 block w-full bg-gray-50 border border-gray-300 rounded-md h-10 focus:ring-0 focus:outline-none"
+                                readonly disabled>
+                            <input type="hidden" name="tanggal_masuk" value="{{ $siswa->tanggal_masuk }}">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Hubungi sekolah untuk mengubah tanggal masuk
+                        </p>
+                        @else
+                        <!-- Editable for admin and petugas -->
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -222,9 +397,11 @@
                                 max="{{ date('Y-m-d') }}"
                                 class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_masuk') border-red-300 @enderror">
                         </div>
+                        @endif
                     </div>
                     
-                    <!-- Status Aktif (Design Sederhana yang Dapat Diklik) -->
+                    <!-- Status Aktif - Hanya Admin yang bisa edit -->
+                    @if($isAdmin)
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-3">
                             Status Siswa
@@ -273,10 +450,93 @@
                             </div>
                         </div>
                     </div>
+                    @else
+                    <!-- Status Read-Only untuk Petugas dan Orang Tua -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Status Siswa
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                @if($siswa->status_aktif)
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                @else
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                @endif
+                            </div>
+                            <input type="text" 
+                                value="{{ $siswa->status_aktif ? 'Aktif' : 'Tidak Aktif' }}" 
+                                class="pl-10 block w-full bg-gray-50 border border-gray-300 rounded-md h-10 focus:ring-0 focus:outline-none"
+                                readonly disabled>
+                            <input type="hidden" name="status_aktif" value="{{ $siswa->status_aktif }}">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            @if($isOrangTua)
+                                Hubungi sekolah untuk mengubah status siswa
+                            @else
+                                Hanya admin yang dapat mengubah status siswa
+                            @endif
+                        </p>
+                    </div>
+                    @endif
+                    
+                    <!-- Field Tanggal Lulus - Hanya Admin yang bisa edit -->
+                    @if($isAdmin)
+                    <div>
+                        <label for="tanggal_lulus" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tanggal Lulus
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <input type="date" 
+                                id="tanggal_lulus" 
+                                name="tanggal_lulus" 
+                                value="{{ old('tanggal_lulus', $siswa->tanggal_lulus ? date('Y-m-d', strtotime($siswa->tanggal_lulus)) : '') }}" 
+                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_lulus') border-red-300 @enderror">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Kosongkan jika siswa belum lulus
+                        </p>
+                    </div>
+                    @else
+                    <!-- Tanggal Lulus Read-Only untuk Petugas dan Orang Tua -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Tanggal Lulus
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                value="{{ $siswa->tanggal_lulus ? \Carbon\Carbon::parse($siswa->tanggal_lulus)->format('d F Y') : 'Belum lulus' }}" 
+                                class="pl-10 block w-full bg-gray-50 border border-gray-300 rounded-md h-10 focus:ring-0 focus:outline-none"
+                                readonly disabled>
+                            <input type="hidden" name="tanggal_lulus" value="{{ $siswa->tanggal_lulus }}">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            @if($isOrangTua)
+                                Hubungi sekolah untuk informasi tanggal lulus
+                            @else
+                                Hanya admin yang dapat mengubah tanggal lulus
+                            @endif
+                        </p>
+                    </div>
+                    @endif
                 </div>
 
-                <!-- Alokasi Button -->
-                @if(substr($siswa->id_siswa, 0, 1) == '6' && (!$siswa->detailSiswa || !$siswa->detailSiswa->kode_jurusan))
+                <!-- Alokasi Button - Hanya Admin -->
+                @if($isAdmin && substr($siswa->id_siswa, 0, 1) == '6' && (!$siswa->detailSiswa || !$siswa->detailSiswa->kode_jurusan))
                 <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
@@ -294,10 +554,10 @@
                                 </p>
                             </div>
                             <div class="mt-3">
-                                <button type="button" onclick="window.location.href='{{ route('siswa.index') }}#alokasi-{{ $siswa->id_siswa }}'" 
+                                <a href="{{ route('alokasi.unallocated') }}" 
                                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                                     <i class="fas fa-user-check mr-2"></i> Alokasikan Siswa
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -306,7 +566,7 @@
 
                 <!-- Form Buttons -->
                 <div class="mt-8 flex justify-end space-x-3">
-                    <button type="button" onclick="window.location.href='{{ route('siswa.index') }}'" 
+                    <button type="button" onclick="window.location.href='{{ route($indexRoute) }}'" 
                         class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <svg class="mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -326,6 +586,7 @@
     </div>
 
     <!-- Information Section -->
+    @if(!$isOrangTua)
     <div class="mt-8 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
         <div class="p-6 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-gray-200">
             <h2 class="text-lg font-bold text-gray-800">
@@ -354,21 +615,30 @@
                                     Format lama
                                 @endif
                             </li>
-                            <li><span class="font-semibold">Dibuat pada:</span> {{ $siswa->dibuat_pada ? date('d/m/Y H:i', strtotime($siswa->dibuat_pada)) : 'Tidak ada data' }}</li>
-                            <li><span class="font-semibold">Terakhir diperbarui:</span> {{ $siswa->diperbarui_pada ? date('d/m/Y H:i', strtotime($siswa->diperbarui_pada)) : 'Tidak ada data' }}</li>
-                            <li><span class="font-semibold">Perubahan sebelumnya:</span> {{ $siswa->diperbarui_pada && $siswa->diperbarui_pada != $siswa->dibuat_pada ? 'Ya' : 'Belum pernah diubah' }}</li>
+                            <li><span class="font-semibold">Dibuat pada:</span> {{ $siswa->created_at ? $siswa->created_at->format('d/m/Y H:i') : 'Tidak ada data' }}</li>
+                            <li><span class="font-semibold">Terakhir diperbarui:</span> {{ $siswa->updated_at ? $siswa->updated_at->format('d/m/Y H:i') : 'Tidak ada data' }}</li>
+                            <li><span class="font-semibold">Perubahan sebelumnya:</span> {{ $siswa->updated_at && $siswa->updated_at != $siswa->created_at ? 'Ya' : 'Belum pernah diubah' }}</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    @endif
 </div>
 
 @push('scripts')
 <script>
-    // Script untuk form dan handling radio button
+    // Double check access level - prevent any bypass attempts
     document.addEventListener('DOMContentLoaded', function() {
+        const userLevel = '{{ $userLevel }}';
+        if (userLevel === 'dokter') {
+            console.warn('Access violation detected: Doctor trying to access edit student form');
+            window.location.href = '{{ route("dokter.siswa.index") }}';
+            return;
+        }
+
+        // Script untuk form dan handling radio button
         // Autoformat nama siswa (kapitalisasi setiap kata)
         const namaSiswaInput = document.getElementById('nama_siswa');
         if (namaSiswaInput) {
@@ -379,17 +649,18 @@
             });
         }
         
-        // Radio button aktif/nonaktif styling
+        // Radio button aktif/nonaktif styling - hanya untuk admin
+        @if($isAdmin)
         function updateRadioStatus() {
             // Status Aktif
             const radioAktif = document.getElementById('status_aktif_1');
             const labelAktif = document.querySelector('.status-radio-aktif');
             const dotAktif = document.querySelector('.status-dot-aktif div');
             
-            if (radioAktif.checked) {
+            if (radioAktif && radioAktif.checked) {
                 labelAktif.classList.add('border-2', 'border-green-500');
                 dotAktif.classList.remove('hidden');
-            } else {
+            } else if (radioAktif) {
                 labelAktif.classList.remove('border-2', 'border-green-500');
                 dotAktif.classList.add('hidden');
             }
@@ -399,10 +670,10 @@
             const labelNonaktif = document.querySelector('.status-radio-nonaktif');
             const dotNonaktif = document.querySelector('.status-dot-nonaktif div');
             
-            if (radioNonaktif.checked) {
+            if (radioNonaktif && radioNonaktif.checked) {
                 labelNonaktif.classList.add('border-2', 'border-red-500');
                 dotNonaktif.classList.remove('hidden');
-            } else {
+            } else if (radioNonaktif) {
                 labelNonaktif.classList.remove('border-2', 'border-red-500');
                 dotNonaktif.classList.add('hidden');
             }
@@ -412,9 +683,37 @@
         updateRadioStatus();
         
         // Listener untuk perubahan radio
-        document.getElementById('status_aktif_1').addEventListener('change', updateRadioStatus);
-        document.getElementById('status_aktif_0').addEventListener('change', updateRadioStatus);
+        const radioAktif = document.getElementById('status_aktif_1');
+        const radioNonaktif = document.getElementById('status_aktif_0');
+        
+        if (radioAktif) radioAktif.addEventListener('change', updateRadioStatus);
+        if (radioNonaktif) radioNonaktif.addEventListener('change', updateRadioStatus);
+        
+        // Toggle field tanggal lulus berdasarkan status aktif
+        const tanggalLulusField = document.getElementById('tanggal_lulus');
+        
+        function updateTanggalLulusVisibility() {
+            if (radioNonaktif && radioNonaktif.checked && tanggalLulusField) {
+                tanggalLulusField.required = true;
+                tanggalLulusField.parentElement.parentElement.classList.remove('opacity-50');
+                tanggalLulusField.parentElement.parentElement.querySelector('p').textContent = 'Wajib diisi jika status tidak aktif';
+            } else if (tanggalLulusField) {
+                tanggalLulusField.required = false;
+                tanggalLulusField.parentElement.parentElement.classList.add('opacity-50');
+                tanggalLulusField.parentElement.parentElement.querySelector('p').textContent = 'Kosongkan jika siswa belum lulus';
+            }
+        }
+        
+        // Set visibility awal
+        updateTanggalLulusVisibility();
+        
+        // Listener untuk perubahan radio yang mempengaruhi tanggal lulus
+        if (radioAktif) radioAktif.addEventListener('change', updateTanggalLulusVisibility);
+        if (radioNonaktif) radioNonaktif.addEventListener('change', updateTanggalLulusVisibility);
+        @endif
     });
 </script>
 @endpush
+
+@endif {{-- End of access control for dokter --}}
 @endsection

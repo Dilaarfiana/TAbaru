@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('content')
 <div class="p-4 bg-gray-50 min-h-screen">
@@ -65,9 +65,9 @@
                         <p class="text-xs text-gray-500 mt-1">NIP harus terdiri dari 18 digit angka sesuai format resmi</p>
                     </div>
 
-                    <!-- Nama Petugas Field -->
+                    <!-- Nama Petugas Field - SUDAH DIPERBAIKI -->
                     <div>
-                        <label for="nama_petugas_uks" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="Nama_Petugas_UKS" class="block text-sm font-medium text-gray-700 mb-1">
                             Nama Petugas <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -76,7 +76,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                             </div>
-                            <input type="text" id="nama_petugas_uks" name="nama_petugas_uks" value="{{ old('nama_petugas_uks') }}" required
+                            <input type="text" id="Nama_Petugas_UKS" name="nama_petugas_uks" value="{{ old('nama_petugas_uks') }}" required
                                 class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('nama_petugas_uks') border-red-300 text-red-900 @enderror"
                                 placeholder="Masukkan nama lengkap" maxlength="50">
                         </div>
@@ -85,9 +85,78 @@
                         @enderror
                     </div>
 
+                    <!-- Level Field -->
+                    <div>
+                        <label for="level" class="block text-sm font-medium text-gray-700 mb-1">
+                            Level/Hak Akses <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </div>
+                            <select id="level" name="level"
+                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('level') border-red-300 text-red-900 @enderror appearance-none">
+                                <option value="petugas" {{ old('level', 'petugas') == 'petugas' ? 'selected' : '' }}>Petugas</option>
+                                <option value="admin" {{ old('level') == 'admin' ? 'selected' : '' }}>Admin</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        @error('level')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="text-xs text-gray-500 mt-1">Admin: hak akses penuh, Petugas: hak akses terbatas</p>
+                    </div>
+
+                    <!-- Password Field - Simplified -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                required
+                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('password') border-red-300 text-red-900 @enderror"
+                                placeholder="Masukkan password (min. 6 karakter)"
+                            >
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <button 
+                                    type="button" 
+                                    class="text-gray-400 hover:text-gray-500 focus:outline-none"
+                                    onclick="togglePasswordVisibility()"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" id="eyeIcon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" id="eyeOffIcon" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        @error('password')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="text-xs text-gray-500 mt-1">Password minimal 6 karakter</p>
+                    </div>
+
                     <!-- Alamat Field -->
                     <div class="md:col-span-2">
-                        <label for="alamat" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="Alamat" class="block text-sm font-medium text-gray-700 mb-1">
                             Alamat
                         </label>
                         <div class="relative">
@@ -97,7 +166,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </div>
-                            <textarea id="alamat" name="alamat" rows="3" 
+                            <textarea id="Alamat" name="alamat" rows="3" 
                                 class="pl-10 block w-full border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('alamat') border-red-300 @enderror"
                                 placeholder="Masukkan alamat lengkap">{{ old('alamat') }}</textarea>
                         </div>
@@ -108,7 +177,7 @@
 
                     <!-- No. Telepon Field -->
                     <div>
-                        <label for="no_telp" class="block text-sm font-medium text-gray-700 mb-1">
+                        <label for="No_Telp" class="block text-sm font-medium text-gray-700 mb-1">
                             No. Telepon
                         </label>
                         <div class="relative">
@@ -120,7 +189,7 @@
                             <div class="absolute inset-y-0 left-10 flex items-center pointer-events-none">
                                 <span class="text-gray-500 pl-0.5 pr-1">+62</span>
                             </div>
-                            <input type="text" id="no_telp" name="no_telp" value="{{ old('no_telp') }}"
+                            <input type="text" id="No_Telp" name="no_telp" value="{{ old('no_telp') }}"
                                 class="pl-20 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('no_telp') border-red-300 @enderror"
                                 placeholder="81234567890 (tanpa angka 0 di depan)">
                         </div>
@@ -151,43 +220,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Password Field -->
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                            Password <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-                            <input type="password" id="password" name="password" required
-                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('password') border-red-300 @enderror"
-                                placeholder="Masukkan password (min. 6 karakter)">
-                        </div>
-                        @error('password')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Konfirmasi Password Field -->
-                    <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">
-                            Konfirmasi Password <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </div>
-                            <input type="password" id="password_confirmation" name="password_confirmation" required
-                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Konfirmasi password">
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Tips dan Informasi -->
@@ -204,6 +236,7 @@
                                 <ul class="list-disc space-y-1 pl-5">
                                     <li>NIP harus terdiri dari 18 digit angka</li>
                                     <li>No. Telepon akan otomatis diformat dengan awalan +62</li>
+                                    <li>Level "Admin" memiliki hak akses penuh, "Petugas" memiliki hak akses terbatas</li>
                                     <li>Password minimal 6 karakter untuk keamanan</li>
                                 </ul>
                             </div>
@@ -232,4 +265,22 @@
         </div>
     </div>
 </div>
+
+<script>
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const eyeOffIcon = document.getElementById('eyeOffIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.add('hidden');
+        eyeOffIcon.classList.remove('hidden');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('hidden');
+        eyeOffIcon.classList.add('hidden');
+    }
+}
+</script>
 @endsection

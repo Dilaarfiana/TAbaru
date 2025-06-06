@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class PemeriksaanHarian extends Model
 {
     use HasFactory;
-
+    
     // Nama tabel yang sesuai dengan database
-    protected $table = 'pemeriksaan_harian';
+    protected $table = 'pemeriksaan_harians';
     
     // Primary key
     protected $primaryKey = 'Id_Harian';
@@ -29,7 +29,6 @@ class PemeriksaanHarian extends Model
         'Tanggal_Jam',
         'Hasil_Pemeriksaan',
         'Id_Siswa',
-        'Id_Dokter',
         'NIP'
     ];
     
@@ -37,12 +36,6 @@ class PemeriksaanHarian extends Model
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'Id_Siswa', 'id_siswa');
-    }
-    
-    // Relasi dengan model Dokter
-    public function dokter()
-    {
-        return $this->belongsTo(Dokter::class, 'Id_Dokter', 'Id_Dokter');
     }
     
     // Relasi dengan model PetugasUKS
