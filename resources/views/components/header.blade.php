@@ -258,43 +258,6 @@
                 </div>
                 @endif
                 
-                <!-- Quick Actions Dropdown -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="p-2 text-gray-500 hover:text-gray-600" title="Menu Cepat">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    
-                    <div x-show="open" 
-                        @click.away="open = false"
-                        x-transition:enter="transition ease-out duration-100"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-75"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="origin-top-right absolute right-0 mt-2 w-48 rounded-lg bg-white shadow-lg z-50 border border-gray-200">
-                        
-                        <div class="py-1">
-                            <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-home text-blue-500 mr-3 w-4 text-center"></i> 
-                                Dashboard
-                            </a>
-                            
-                            @if($userLevel === 'orang_tua')
-                                <a href="{{ route('orangtua.siswa.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                    <i class="fas fa-child text-purple-500 mr-3 w-4 text-center"></i> 
-                                    Data Siswa Saya
-                                </a>
-                            @endif
-                            
-                            <a href="{{ route('profile.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-user text-blue-500 mr-3 w-4 text-center"></i> 
-                                Profil Saya
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- User Menu -->
                 <div class="relative" x-data="{ open: false }">
                     <div>

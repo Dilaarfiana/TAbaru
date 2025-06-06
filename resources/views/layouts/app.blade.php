@@ -538,7 +538,7 @@
         <div class="sidebar-header">
             <div class="flex items-center">
                 <img src="{{ asset('images/logosekolah.png') }}" alt="Logo Sekolah" class="w-9 h-10 mr-2">
-                <span class="font-bold text-lg">Sehati</span>
+                <span class="font-bold text-lg">Sihati</span>
             </div>
             <button id="sidebar-close" class="text-gray-500 p-2 rounded-full md:hidden">
                 <i class="fas fa-times text-lg"></i>

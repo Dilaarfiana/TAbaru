@@ -65,13 +65,7 @@
             <div class="flex flex-wrap gap-2">
                 @if(!$isOrangTua)
                     <button onclick="exportData()" class="bg-green-500 text-white hover:bg-green-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center text-sm">
-                        <i class="fas fa-file-excel mr-2"></i> Ekspor Excel / PDF
-                    </button>
-                @endif
-                
-                @if($isPetugas)
-                    <button onclick="showAddHarianModal()" class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center text-sm">
-                        <i class="fas fa-plus mr-2"></i> Tambah Data Baru
+                        <i class="fas fa-file-excel mr-2"></i> Ekspor Excel
                     </button>
                 @endif
                 
@@ -118,7 +112,7 @@
                     <div><strong>Fitur:</strong></div>
                     <ul class="list-disc list-inside mt-1 space-y-1">
                         <li><strong>Hanya dapat melihat dan mengelola data input sendiri</strong></li>
-                        <li><strong>Dapat menambah data baru</strong></li>
+                        <li><strong>Dapat melihat detail pemeriksaan</strong></li>
                     </ul>
                 </div>
             </div>
@@ -448,15 +442,15 @@
                                 {{ $harian->hasil_pemeriksaan }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button onclick="viewDetail('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
-                                            class="text-blue-600 hover:text-blue-800 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <div class="flex justify-center space-x-1">
+                                    <a href="javascript:void(0)" onclick="viewDetail('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
+                                       class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button onclick="downloadPDF('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
-                                            class="text-red-600 hover:text-red-800 bg-red-100 px-2 py-1 rounded" title="Download PDF">
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="downloadPDF('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
+                                       class="text-white px-2 py-1 rounded bg-red-500 hover:bg-red-700" title="Download PDF">
                                         <i class="fas fa-file-pdf"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -506,11 +500,11 @@
                                 {{ $harian->hasil_pemeriksaan }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button onclick="viewDetail('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
-                                            class="text-blue-600 hover:text-blue-800 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <div class="flex justify-center space-x-1">
+                                    <a href="javascript:void(0)" onclick="viewDetail('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
+                                       class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -562,11 +556,11 @@
                                 {{ $harian->ringkasan }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button onclick="viewDetail('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
-                                            class="text-blue-600 hover:text-blue-800 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <div class="flex justify-center space-x-1">
+                                    <a href="javascript:void(0)" onclick="viewDetail('{{ $harian->siswa_id }}', '{{ $harian->id }}')" 
+                                       class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -642,10 +636,10 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <button onclick="viewDetail('{{ session('siswa_id') }}', '{{ $harian->id }}')" 
-                                        class="text-blue-600 hover:text-blue-800 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <a href="javascript:void(0)" onclick="viewDetail('{{ session('siswa_id') }}', '{{ $harian->id }}')" 
+                                   class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
-                                </button>
+                                </a>
                             </td>
                         </tr>
                     @empty
@@ -702,62 +696,6 @@
     </div>
     @endif
 </div>
-
-<!-- Modal Tambah Pemeriksaan Harian (Petugas) -->
-@if($isPetugas)
-<div id="addHarianModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-plus text-blue-600 mr-2"></i>
-                    Tambah Pemeriksaan Harian Baru
-                </h3>
-                <button onclick="closeAddHarianModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <form id="addHarianForm">
-                @csrf
-                <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label for="siswa_id" class="block text-sm font-medium text-gray-700">Pilih Siswa</label>
-                        <select name="siswa_id" id="siswa_id" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Pilih Siswa</option>
-                            @if(isset($siswas))
-                                @foreach($siswas as $siswa)
-                                    <option value="{{ $siswa->id_siswa }}">{{ $siswa->nama_siswa }} ({{ $siswa->id_siswa }})</option>
-                                @endforeach
-                            @endif
-                        </select>
-                    </div>
-                    <div>
-                        <label for="tanggal_jam" class="block text-sm font-medium text-gray-700">Tanggal & Waktu Pemeriksaan</label>
-                        <input type="datetime-local" name="tanggal_jam" id="tanggal_jam" required 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="hasil_pemeriksaan" class="block text-sm font-medium text-gray-700">Hasil Pemeriksaan</label>
-                        <textarea name="hasil_pemeriksaan" id="hasil_pemeriksaan" rows="4" required 
-                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                  placeholder="Masukkan hasil pemeriksaan harian..."></textarea>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeAddHarianModal()" 
-                            class="px-4 py-2 bg-gray-300 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-400">
-                        Batal
-                    </button>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endif
 
 @push('scripts')
 <script>
@@ -819,7 +757,7 @@ function exportData() {
     document.body.removeChild(form);
 }
 
-// UPDATED: View detail function - sekarang mengarahkan ke halaman detail
+// View detail function - mengarahkan ke halaman detail
 function viewDetail(siswaId, harianId) {
     @if($isAdmin)
         // Admin route: /admin/laporan/harian/detail/{siswa}/{harian}
@@ -846,62 +784,6 @@ function downloadPDF(siswaId, harianId) {
 function showFullText(harianId) {
     // Implementasi untuk menampilkan teks lengkap dalam modal atau expand
     alert('Fitur untuk menampilkan teks lengkap');
-}
-
-@if($isPetugas)
-// Show add harian modal
-function showAddHarianModal() {
-    document.getElementById('addHarianModal').classList.remove('hidden');
-    // Set current date and time
-    const now = new Date();
-    const datetime = now.toISOString().slice(0, 16);
-    document.getElementById('tanggal_jam').value = datetime;
-}
-
-// Close add harian modal
-function closeAddHarianModal() {
-    document.getElementById('addHarianModal').classList.add('hidden');
-    document.getElementById('addHarianForm').reset();
-}
-
-// Handle add harian form submission
-document.getElementById('addHarianForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    fetch('/petugas/harian/add', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Pemeriksaan harian berhasil ditambahkan!');
-            closeAddHarianModal();
-            window.location.reload();
-        } else {
-            alert('Error: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan saat menambah data');
-    });
-});
-@endif
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    @if($isPetugas)
-    const addModal = document.getElementById('addHarianModal');
-    if (event.target == addModal) {
-        closeAddHarianModal();
-    }
-    @endif
 }
 </script>
 @endpush

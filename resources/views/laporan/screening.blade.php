@@ -343,15 +343,15 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button onclick="viewDetail('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
-                                            class="text-blue-500 hover:text-blue-600 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <div class="flex justify-center space-x-1">
+                                    <a href="javascript:void(0)" onclick="viewDetail('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
+                                       class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button onclick="downloadPDF('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
-                                            class="text-red-600 hover:text-red-800 bg-red-100 px-2 py-1 rounded" title="Download PDF">
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="downloadPDF('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
+                                       class="text-white px-2 py-1 rounded bg-red-500 hover:bg-red-700" title="Download PDF">
                                         <i class="fas fa-file-pdf"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -403,11 +403,11 @@
                                 {{ $riwayat->ringkasan }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button onclick="viewDetailOrangTua('{{ $riwayat->siswa_id }}', '{{ $riwayat->id }}')" 
-                                            class="text-blue-600 hover:text-blue-800 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <div class="flex justify-center space-x-1">
+                                    <a href="javascript:void(0)" onclick="viewDetailOrangTua('{{ $riwayat->siswa_id }}', '{{ $riwayat->id }}')" 
+                                       class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -473,19 +473,19 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button onclick="viewDetail('{{ $screening->siswa_id }}', '{{ $screening->id_detprx }}')" 
-                                            class="text-blue-600 hover:text-blue-800 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <div class="flex justify-center space-x-1">
+                                    <a href="javascript:void(0)" onclick="viewDetail('{{ $screening->siswa_id }}', '{{ $screening->id_detprx }}')" 
+                                       class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button onclick="downloadPDF('{{ $screening->siswa_id }}', '{{ $screening->id_detprx }}')" 
-                                            class="text-red-600 hover:text-red-800 bg-red-100 px-2 py-1 rounded" title="Download PDF">
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="downloadPDF('{{ $screening->siswa_id }}', '{{ $screening->id_detprx }}')" 
+                                       class="text-white px-2 py-1 rounded bg-red-500 hover:bg-red-700" title="Download PDF">
                                         <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                    <button onclick="previewPDF('{{ $screening->siswa_id }}', '{{ $screening->id_detprx }}')" 
-                                            class="text-green-600 hover:text-green-800 bg-green-100 px-2 py-1 rounded" title="Preview PDF">
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="previewPDF('{{ $screening->siswa_id }}', '{{ $screening->id_detprx }}')" 
+                                       class="text-white px-2 py-1 rounded bg-green-500 hover:bg-green-700" title="Preview PDF">
                                         <i class="fas fa-search"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -562,15 +562,15 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="flex justify-center space-x-2">
-                                    <button onclick="viewDetail('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
-                                            class="text-blue-600 hover:text-blue-800 bg-blue-100 px-2 py-1 rounded" title="Lihat Detail">
+                                <div class="flex justify-center space-x-1">
+                                    <a href="javascript:void(0)" onclick="viewDetail('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
+                                       class="text-white px-2 py-1 rounded bg-blue-500 hover:bg-blue-700" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button onclick="downloadPDF('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
-                                            class="text-red-600 hover:text-red-800 bg-red-100 px-2 py-1 rounded" title="Download PDF">
+                                    </a>
+                                    <a href="javascript:void(0)" onclick="downloadPDF('{{ $pemeriksaan->siswa_id }}', '{{ $pemeriksaan->id_detprx }}')" 
+                                       class="text-white px-2 py-1 rounded bg-red-500 hover:bg-red-700" title="Download PDF">
                                         <i class="fas fa-file-pdf"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -672,15 +672,15 @@
             <div class="bg-white border-t border-gray-200 px-6 py-4">
                 <div class="flex justify-between items-center">
                     <div class="flex gap-3">
-                        <button id="downloadBtn" onclick="downloadScreeningDetail('', '')" 
-                                class="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center">
-                            <i class="fas fa-download mr-2 text-purple-600"></i>Download PDF
-                        </button>
+                        <a id="downloadBtn" href="javascript:void(0)" onclick="downloadScreeningDetail('', '')" 
+                           class="text-white px-2 py-1 rounded bg-purple-500 hover:bg-purple-700 flex items-center">
+                            <i class="fas fa-download mr-2"></i>Download PDF
+                        </a>
                     </div>
-                    <button onclick="closeDetailModal()" 
-                            class="bg-purple-600 text-white px-5 py-2.5 rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center">
+                    <a href="javascript:void(0)" onclick="closeDetailModal()" 
+                       class="text-white px-2 py-1 rounded bg-gray-500 hover:bg-gray-700 flex items-center">
                         <i class="fas fa-times mr-2"></i>Tutup
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -1412,14 +1412,14 @@ function showErrorContent(errorMessage, siswaId, rekamMedisId) {
                 <h3 class="text-lg font-semibold text-gray-800 mb-3">Gagal Memuat Data Pemeriksaan</h3>
                 <p class="text-gray-600 mb-6">${errorMessage}</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-3">
-                    <button onclick="viewDetailOrangTua('${siswaId}', '${rekamMedisId}')" 
-                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
+                    <a href="javascript:void(0)" onclick="viewDetailOrangTua('${siswaId}', '${rekamMedisId}')" 
+                       class="text-white px-2 py-1 rounded bg-red-500 hover:bg-red-700 flex items-center justify-center">
                         <i class="fas fa-redo mr-2"></i>Coba Lagi
-                    </button>
-                    <button onclick="closeDetailModal()" 
-                            class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center">
+                    </a>
+                    <a href="javascript:void(0)" onclick="closeDetailModal()" 
+                       class="text-white px-2 py-1 rounded bg-gray-500 hover:bg-gray-700 flex items-center justify-center">
                         <i class="fas fa-times mr-2"></i>Tutup
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
