@@ -44,4 +44,12 @@ class RekamMedis extends Model
     {
         return $this->hasMany(DetailPemeriksaan::class, 'Id_Siswa', 'Id_Siswa');
     }
+
+    // Tambahkan di bawah method lainnya di RekamMedis.php
+public function petugasUKS()
+{
+    return $this->belongsTo(PetugasUKS::class, 'Id_Petugas_UKS', 'Id_Petugas_UKS');
+}
+
+
 }

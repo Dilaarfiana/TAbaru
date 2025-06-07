@@ -556,12 +556,13 @@
                         <i class="fas fa-times mr-2 text-gray-500"></i>
                         Batal
                     </button>
-                    <button type="submit" 
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        id="submitBtn">
-                        <i class="fas fa-save mr-2"></i>
-                        <span id="submitText">Update Rekam Medis</span>
-                    </button>
+<button type="submit" 
+    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    id="submitBtn">
+    <i class="fas fa-save mr-2"></i>
+    <span id="submitText">Update Rekam Medis</span>
+</button>
+
                 </div>
             </form>
         </div>

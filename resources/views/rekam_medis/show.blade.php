@@ -21,7 +21,7 @@
     $baseRoute = $isAdmin ? 'rekam_medis' : ($isPetugas ? 'petugas.rekam_medis' : 'dokter.rekam_medis');
     $indexRoute = $baseRoute . '.index';
     $showRoute = $baseRoute . '.show';
-    $cetakRoute = $baseRoute . '.cetak';
+
     
     // Routes yang hanya untuk admin dan petugas
     $editRoute = null;
@@ -68,13 +68,7 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                {{-- Tombol Print - semua role yang berhak akses bisa print --}}
-                @if($cetakRoute)
-                <a href="{{ route($cetakRoute, $rekamMedis->No_Rekam_Medis) }}" target="_blank" 
-                   class="bg-blue-500 text-white hover:bg-blue-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
-                    <i class="fas fa-print mr-2"></i> Cetak
-                </a>
-                @endif
+
                 
                 {{-- Tombol Edit - hanya admin dan petugas --}}
                 @if($editRoute)
@@ -657,15 +651,7 @@
                 </a>
                 
                 <div class="flex space-x-2">
-                    {{-- Tombol Print - semua role yang berhak akses bisa print --}}
-                    @if($cetakRoute)
-                    <a href="{{ route($cetakRoute, $rekamMedis->No_Rekam_Medis) }}" target="_blank" 
-                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                        <i class="fas fa-print mr-2"></i>
-                        Cetak Rekam Medis
-                    </a>
-                    @endif
-                    
+
                     {{-- Tombol Edit - hanya admin dan petugas --}}
                     @if($editRoute)
                         <a href="{{ route($editRoute, $rekamMedis->No_Rekam_Medis) }}" 

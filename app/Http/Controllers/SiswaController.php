@@ -299,6 +299,21 @@ class SiswaController extends Controller
         return view('siswa.create', compact('nextId'));
     }
 
+private function getNextSequenceId($includeJurusan = false)
+{
+    $lastId = \DB::table('siswas')->max('id_siswa');
+
+    // Jika null atau bukan angka, mulai dari 625001
+    if (!is_numeric($lastId)) {
+        return 625003;
+    }
+
+    return (int)$lastId + 1;
+}
+
+
+    
+
     /**
      * Store a newly created resource in storage.
      */

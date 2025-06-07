@@ -407,7 +407,6 @@ Route::middleware(['auth.custom'])->group(function () {
             Route::get('{rekam_medis}', [RekamMedisController::class, 'show'])->name('show');
             Route::get('{rekam_medis}/edit', [RekamMedisController::class, 'edit'])->name('edit');
             Route::put('{rekam_medis}', [RekamMedisController::class, 'update'])->name('update');
-            Route::get('{id}/cetak', [RekamMedisController::class, 'cetak'])->name('cetak');
             // ❌ NO DELETE route
         });
 

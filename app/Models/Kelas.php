@@ -10,7 +10,7 @@ class Kelas extends Model
 {
     use HasFactory;
     
-    protected $table = 'Kelas';
+    protected $table = 'kelas';
     protected $primaryKey = 'Kode_Kelas';
     public $incrementing = false;
     protected $keyType = 'string';
