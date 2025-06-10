@@ -163,10 +163,27 @@
                         </h2>
                         <p class="text-gray-600 text-sm mt-1">Daftar pemeriksaan yang baru dilakukan</p>
                     </div>
-                    <a href="#" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
-                        Lihat Semua
-                        <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
+                    @if(session('user_level') === 'admin')
+                        <a href="{{ route('detail_pemeriksaan.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @elseif(session('user_level') === 'petugas')
+                        <a href="{{ route('petugas.detail_pemeriksaan.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @elseif(session('user_level') === 'dokter')
+                        <a href="{{ route('dokter.detail_pemeriksaan.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @else
+                        <a href="{{ route('orangtua.riwayat.pemeriksaan_harian') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @endif
                 </div>
                 
                 <div class="overflow-x-auto">
@@ -177,7 +194,6 @@
                                 <th class="text-left px-4 py-3 text-gray-600 text-sm font-semibold">Nama Siswa</th>
                                 <th class="text-left px-4 py-3 text-gray-600 text-sm font-semibold">Dokter</th>
                                 <th class="text-left px-4 py-3 text-gray-600 text-sm font-semibold">Hasil</th>
-                                <th class="text-right px-4 py-3 text-gray-600 text-sm font-semibold">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -197,10 +213,10 @@
                                 <td class="px-4 py-4">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold text-sm mr-3">
-                                            {{ substr($pemeriksaan['siswa']->Nama_Siswa ?? 'XX', 0, 2) }}
+                                            {{ substr($pemeriksaan['siswa']->nama_siswa ?? 'XX', 0, 2) }}
                                         </div>
                                         <div>
-                                            <div class="font-medium text-gray-900">{{ $pemeriksaan['siswa']->Nama_Siswa ?? 'Tidak diketahui' }}</div>
+                                            <div class="font-medium text-gray-900">{{ $pemeriksaan['siswa']->nama_siswa ?? 'Tidak diketahui' }}</div>
                                             <div class="text-xs text-gray-500">ID: {{ $pemeriksaan['siswa']->id_siswa ?? 'N/A' }}</div>
                                         </div>
                                     </div>
@@ -214,21 +230,19 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-4">
-                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full 
+                                        @if($pemeriksaan['jenis'] === 'Harian') bg-blue-100 text-blue-800
+                                        @elseif($pemeriksaan['jenis'] === 'Detail') bg-green-100 text-green-800
+                                        @else bg-purple-100 text-purple-800
+                                        @endif">
                                         <i class="fas fa-check-circle mr-1"></i>
-                                        {{ Str::limit($pemeriksaan['hasil'] ?? 'Tidak ada hasil', 20) }}
+                                        {{ \Illuminate\Support\Str::limit($pemeriksaan['hasil'] ?? 'Tidak ada hasil', 20) }}
                                     </span>
-                                </td>
-                                <td class="px-4 py-4 text-right">
-                                    <a href="#" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
-                                        <i class="fas fa-eye mr-1"></i>
-                                        Detail
-                                    </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-8 text-center">
+                                <td colspan="4" class="px-4 py-8 text-center">
                                     <div class="flex flex-col items-center">
                                         <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                                             <i class="fas fa-clipboard-list text-gray-400 text-2xl"></i>
@@ -256,10 +270,27 @@
                         </h2>
                         <p class="text-gray-600 text-sm mt-1">Resep obat yang baru diterbitkan</p>
                     </div>
-                    <a href="#" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
-                        Lihat Semua
-                        <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
+                    @if(session('user_level') === 'admin')
+                        <a href="{{ route('resep.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @elseif(session('user_level') === 'petugas')
+                        <a href="{{ route('petugas.resep.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @elseif(session('user_level') === 'dokter')
+                        <a href="{{ route('dokter.resep.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @else
+                        <a href="{{ route('orangtua.riwayat.resep') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                            Lihat Semua
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    @endif
                 </div>
                 
                 <div class="space-y-4">
@@ -268,10 +299,10 @@
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-red-400 flex items-center justify-center text-white font-semibold text-sm mr-3">
-                                    {{ substr($resep->siswa->Nama_Siswa ?? 'XX', 0, 2) }}
+                                    {{ substr($resep->siswa->nama_siswa ?? 'XX', 0, 2) }}
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-900">{{ $resep->siswa->Nama_Siswa ?? 'Tidak diketahui' }}</p>
+                                    <p class="font-semibold text-gray-900">{{ $resep->siswa->nama_siswa ?? 'Tidak diketahui' }}</p>
                                     <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($resep->Tanggal_Resep)->format('d M Y, H:i') }}</p>
                                 </div>
                             </div>
@@ -299,10 +330,27 @@
                                 <i class="fas fa-user-md mr-1"></i>
                                 <span>{{ $resep->dokter->Nama_Dokter ?? 'Tidak diketahui' }}</span>
                             </div>
-                            <a href="#" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
-                                <i class="fas fa-eye mr-1"></i>
-                                Detail
-                            </a>
+                            @if(session('user_level') === 'admin')
+                                <a href="{{ route('resep.show', $resep->Id_Resep) }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    Detail
+                                </a>
+                            @elseif(session('user_level') === 'petugas')
+                                <a href="{{ route('petugas.resep.show', $resep->Id_Resep) }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    Detail
+                                </a>
+                            @elseif(session('user_level') === 'dokter')
+                                <a href="{{ route('dokter.resep.show', $resep->Id_Resep) }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    Detail
+                                </a>
+                            @else
+                                <a href="{{ route('orangtua.riwayat.resep') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    Detail
+                                </a>
+                            @endif
                         </div>
                     </div>
                     @empty

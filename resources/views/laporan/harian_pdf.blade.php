@@ -418,8 +418,8 @@
                 <h2>DINAS PENDIDIKAN, PEMUDA DAN OLAHRAGA</h2>
                 <h3>SLB NEGERI 1 BANTUL</h3>
                 <p><strong>UNIT KESEHATAN SEKOLAH (UKS)</strong></p>
-                <p>Alamat: Jl. Wates Km. 3, Kadipiro, Kretek, Bantul, D.I. Yogyakarta 55772</p>
-                <p>Telepon: (0274) 367014 | Email: info@slbn1bantul.sch.id</p>
+                <p>Alamat: Jalan Wates km 3 No. 147, Sonopakis Lor, Ngestiharjo, Kec. Kasihan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55182</p>
+                <p>Telepon:  (0274) 374410 | Email: slbnegeri1bantul@gmsil.com</p>
             </div>
         </div>
 

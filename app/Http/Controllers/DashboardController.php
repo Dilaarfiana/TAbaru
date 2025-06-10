@@ -82,7 +82,7 @@ class DashboardController extends Controller
             return redirect()->route('dashboard')->with('error', 'Akses ditolak');
         }
 
-        $nip = session('user_nip');
+        $nip = session('user_nip') ?? session('NIP') ?? session('user_id');
         $today = Carbon::today();
 
         $data = [
@@ -100,7 +100,7 @@ class DashboardController extends Controller
             
             // Role info
             'userRole' => 'petugas',
-            'userName' => session('nama_petugas_uks'),
+            'userName' => session('nama_petugas_uks') ?? session('user_name'),
         ];
 
         return view('dashboard.petugas', $data);
@@ -136,7 +136,7 @@ class DashboardController extends Controller
             
             // Role info
             'userRole' => 'dokter',
-            'userName' => session('nama_dokter'),
+            'userName' => session('nama_dokter') ?? session('user_name'),
         ];
 
         return view('dashboard.dokter', $data);
@@ -178,7 +178,7 @@ class DashboardController extends Controller
             'siswaId' => $siswaId,
             'siswaData' => $siswaData,
             'namaAnak' => $siswaData->nama_siswa ?? 'Anak Anda',
-            'namaOrangTua' => session('nama_orang_tua'),
+            'namaOrangTua' => session('nama_orang_tua') ?? session('user_name'),
             
             // Child's health stats
             'totalRekamMedis' => RekamMedis::where('Id_Siswa', $siswaId)->count(),
@@ -208,30 +208,80 @@ class DashboardController extends Controller
 
     private function getPemeriksaanTerbaru()
     {
-        $pemeriksaanHarian = PemeriksaanHarian::with(['siswa'])
-            ->select('Id_Harian as id', 'Tanggal_Jam as tanggal_jam', 'Id_Siswa', 'Hasil_Pemeriksaan as hasil', DB::raw("'Harian' as jenis"))
+        $pemeriksaanTerbaru = collect();
+
+        // Get Pemeriksaan Harian
+        $pemeriksaanHarian = PemeriksaanHarian::with(['siswa', 'petugasUks'])
             ->orderBy('Tanggal_Jam', 'desc')
-            ->take(3);
-
-        $detailPemeriksaan = DetailPemeriksaan::with(['siswa', 'dokter'])
-            ->select('id_detprx as id', 'tanggal_jam', 'id_siswa', 'status_pemeriksaan as hasil', DB::raw("'Detail' as jenis"))
-            ->orderBy('tanggal_jam', 'desc')
-            ->take(3);
-
-        return $pemeriksaanHarian->union($detailPemeriksaan)
-            ->orderBy('tanggal_jam', 'desc')
-            ->take(5)
+            ->take(3)
             ->get()
             ->map(function($item) {
                 return [
-                    'id' => $item->id,
-                    'tanggal' => $item->tanggal_jam,
-                    'siswa' => $item->siswa,
-                    'dokter' => $item->dokter ?? (object)['Nama_Dokter' => 'Petugas UKS'],
-                    'hasil' => $item->hasil,
-                    'jenis' => $item->jenis
+                    'id' => $item->Id_Harian,
+                    'tanggal' => $item->Tanggal_Jam,
+                    'siswa' => (object)[
+                        'id_siswa' => $item->Id_Siswa,
+                        'nama_siswa' => $item->siswa->nama_siswa ?? 'Tidak diketahui'
+                    ],
+                    'dokter' => (object)[
+                        'Nama_Dokter' => $item->petugasUks->nama_petugas_uks ?? 'Petugas UKS'
+                    ],
+                    'hasil' => $item->Hasil_Pemeriksaan ?? 'Pemeriksaan Harian',
+                    'jenis' => 'Harian'
                 ];
             });
+
+        // Get Detail Pemeriksaan
+        $detailPemeriksaan = DetailPemeriksaan::with(['siswa', 'dokter', 'petugasUks'])
+            ->orderBy('tanggal_jam', 'desc')
+            ->take(3)
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id_detprx,
+                    'tanggal' => $item->tanggal_jam,
+                    'siswa' => (object)[
+                        'id_siswa' => $item->id_siswa,
+                        'nama_siswa' => $item->siswa->nama_siswa ?? 'Tidak diketahui'
+                    ],
+                    'dokter' => (object)[
+                        'Nama_Dokter' => $item->dokter->Nama_Dokter ?? ($item->petugasUks->nama_petugas_uks ?? 'Tidak diketahui')
+                    ],
+                    'hasil' => ucfirst($item->status_pemeriksaan) ?? 'Pemeriksaan Detail',
+                    'jenis' => 'Detail'
+                ];
+            });
+
+        // Get Rekam Medis
+        $rekamMedis = RekamMedis::with(['siswa', 'dokter'])
+            ->orderBy('Tanggal_Jam', 'desc')
+            ->take(2)
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->No_Rekam_Medis,
+                    'tanggal' => $item->Tanggal_Jam,
+                    'siswa' => (object)[
+                        'id_siswa' => $item->Id_Siswa,
+                        'nama_siswa' => $item->siswa->nama_siswa ?? 'Tidak diketahui'
+                    ],
+                    'dokter' => (object)[
+                        'Nama_Dokter' => $item->dokter->Nama_Dokter ?? 'Tidak diketahui'
+                    ],
+                    'hasil' => \Illuminate\Support\Str::limit($item->Keluhan_Utama, 30) ?? 'Rekam Medis',
+                    'jenis' => 'Rekam Medis'
+                ];
+            });
+
+        // Combine and sort by date
+        $pemeriksaanTerbaru = $pemeriksaanHarian
+            ->concat($detailPemeriksaan)
+            ->concat($rekamMedis)
+            ->sortByDesc('tanggal')
+            ->take(5)
+            ->values();
+
+        return $pemeriksaanTerbaru;
     }
 
     private function getResepTerbaru()
@@ -330,21 +380,58 @@ class DashboardController extends Controller
         return $data;
     }
 
+    /**
+     * FIXED: Method untuk mendapatkan pemeriksaan terbaru khusus petugas
+     */
     private function getPemeriksaanTerbarePetugas($nip)
     {
-        return PemeriksaanHarian::with(['siswa'])
-            ->where('NIP', $nip)
-            ->orderBy('Tanggal_Jam', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function($item) {
+        try {
+            // Ambil data pemeriksaan harian terbaru
+            $pemeriksaanHarian = PemeriksaanHarian::with(['siswa'])
+                ->orderBy('Tanggal_Jam', 'desc')
+                ->take(5)
+                ->get();
+
+            // Jika ada data, format sesuai kebutuhan view
+            if ($pemeriksaanHarian->isNotEmpty()) {
+                return $pemeriksaanHarian->map(function($item) {
+                    return [
+                        'id' => $item->Id_Harian,
+                        'tanggal' => $item->Tanggal_Jam,
+                        'siswa' => (object)[
+                            'id_siswa' => $item->Id_Siswa,
+                            'nama_siswa' => $item->siswa->nama_siswa ?? 'Tidak diketahui'
+                        ],
+                        'hasil' => $item->Hasil_Pemeriksaan ?? 'Pemeriksaan Harian',
+                        'jenis' => 'Harian'
+                    ];
+                });
+            }
+
+            // Jika tidak ada data pemeriksaan harian, ambil dari rekam medis terbaru
+            $rekamMedis = RekamMedis::with(['siswa', 'dokter'])
+                ->orderBy('Tanggal_Jam', 'desc')
+                ->take(5)
+                ->get();
+
+            return $rekamMedis->map(function($item) {
                 return [
-                    'id' => $item->Id_Harian,
+                    'id' => $item->No_Rekam_Medis,
                     'tanggal' => $item->Tanggal_Jam,
-                    'siswa' => $item->siswa,
-                    'hasil' => $item->Hasil_Pemeriksaan,
+                    'siswa' => (object)[
+                        'id_siswa' => $item->Id_Siswa,
+                        'nama_siswa' => $item->siswa->nama_siswa ?? 'Tidak diketahui'
+                    ],
+                    'hasil' => \Illuminate\Support\Str::limit($item->Keluhan_Utama, 30) ?? 'Rekam Medis',
+                    'jenis' => 'Rekam Medis'
                 ];
             });
+
+        } catch (\Exception $e) {
+            // Log error dan return empty collection
+            \Log::error('Error getting pemeriksaan terbaru petugas: ' . $e->getMessage());
+            return collect([]);
+        }
     }
 
     private function getPemeriksaanHariIni()
@@ -513,5 +600,27 @@ class DashboardController extends Controller
             default:
                 return response()->json(['error' => 'Unauthorized'], 401);
         }
+    }
+
+    /**
+     * Method untuk debugging - bisa dihapus setelah selesai testing
+     */
+    public function debugPemeriksaan()
+    {
+        $data = [];
+        
+        // Check tables count
+        $data['counts'] = [
+            'pemeriksaan_harian' => PemeriksaanHarian::count(),
+            'rekam_medis' => RekamMedis::count(),
+            'detail_pemeriksaan' => DetailPemeriksaan::count(),
+            'siswa' => Siswa::count(),
+        ];
+        
+        // Get sample data
+        $data['sample_pemeriksaan_harian'] = PemeriksaanHarian::with('siswa')->take(3)->get();
+        $data['sample_rekam_medis'] = RekamMedis::with('siswa')->take(3)->get();
+        
+        return response()->json($data);
     }
 }

@@ -274,9 +274,12 @@ class RekamMedisController extends Controller
         }
 
         $rekamMedis = RekamMedis::with(['siswa', 'dokter', 'petugasUKS'])->findOrFail($id);
+        
+        // PERBAIKAN: Gunakan nama kolom yang sesuai dengan schema database
+        // Database menggunakan snake_case: id_siswa, tanggal_jam
         $detailPemeriksaan = DetailPemeriksaan::with(['dokter', 'petugasUks'])
-            ->where('Id_Siswa', $rekamMedis->Id_Siswa)
-            ->orderBy('Tanggal_Jam', 'desc')
+            ->where('id_siswa', $rekamMedis->Id_Siswa)  // Gunakan snake_case untuk detail_pemeriksaans
+            ->orderBy('tanggal_jam', 'desc')            // Gunakan snake_case untuk detail_pemeriksaans
             ->get();
             
         return view('rekam_medis.show', compact('rekamMedis', 'detailPemeriksaan'));

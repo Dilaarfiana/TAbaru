@@ -192,6 +192,290 @@ class SiswaController extends Controller
     }
 
     /**
+     * PREVIEW next ID tanpa increment sequence (untuk form create)
+     * Hanya untuk tampilan, tidak mengubah sequence
+     */
+    private function previewNextId()
+    {
+        try {
+            // Pastikan tabel sequence_ids ada
+            if (!Schema::hasTable('sequence_ids')) {
+                Schema::create('sequence_ids', function($table) {
+                    $table->string('sequence_name', 50)->primary();
+                    $table->integer('current_value')->default(0);
+                    $table->timestamps();
+                });
+                Log::info('Created sequence_ids table');
+            }
+            
+            $tahun = date('y');
+            $sequenceName = 'siswa_temp';
+            
+            // HANYA baca sequence, TIDAK increment
+            $sequence = DB::table('sequence_ids')
+                ->where('sequence_name', $sequenceName)
+                ->first();
+            
+            if (!$sequence) {
+                // Cari nilai awal dari data existing
+                $maxId = Siswa::where('id_siswa', 'like', "6{$tahun}___")
+                    ->where('id_siswa', 'not like', "6__{$tahun}%")
+                    ->max('id_siswa');
+                
+                $currentValue = 0;
+                if ($maxId && preg_match("/^6{$tahun}(\d{3})$/", $maxId, $matches)) {
+                    $currentValue = (int)$matches[1];
+                }
+                
+                // Preview next value (current + 1) TANPA simpan ke database
+                $nextValue = $currentValue + 1;
+            } else {
+                // Preview next value (current + 1) TANPA simpan ke database
+                $nextValue = $sequence->current_value + 1;
+            }
+            
+            $previewId = "6{$tahun}" . str_pad($nextValue, 3, '0', STR_PAD_LEFT);
+            
+            Log::info('Preview next siswa ID', [
+                'sequence_name' => $sequenceName,
+                'current_value' => $sequence ? $sequence->current_value : $currentValue,
+                'preview_id' => $previewId,
+                'note' => 'Preview only, sequence not incremented'
+            ]);
+            
+            return $previewId;
+            
+        } catch (\Exception $e) {
+            Log::error('Error previewing next ID: ' . $e->getMessage());
+            
+            // Fallback: manual calculation
+            $tahun = date('y');
+            $lastId = Siswa::where('id_siswa', 'like', "6{$tahun}%")
+                ->where('id_siswa', 'not like', "6__{$tahun}%")
+                ->orderBy('id_siswa', 'desc')
+                ->first();
+            
+            if ($lastId) {
+                $lastNumber = intval(substr($lastId->id_siswa, 3));
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+            
+            return "6{$tahun}" . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        }
+    }
+
+    /**
+     * Generate next sequence ID untuk siswa (ACTUAL increment saat store)
+     * 
+     * @param bool $withJurusan - true untuk permanent ID, false untuk temporary
+     * @param string $kodeJurusan - kode jurusan untuk permanent ID
+     * @return string
+     */
+    private function getNextSequenceId($withJurusan = false, $kodeJurusan = null)
+    {
+        try {
+            DB::beginTransaction();
+            
+            // Pastikan tabel sequence_ids ada
+            if (!Schema::hasTable('sequence_ids')) {
+                Schema::create('sequence_ids', function($table) {
+                    $table->string('sequence_name', 50)->primary();
+                    $table->integer('current_value')->default(0);
+                    $table->timestamps();
+                });
+                Log::info('Created sequence_ids table');
+            }
+            
+            $tahun = date('y'); // 25 untuk 2025
+            
+            if ($withJurusan && $kodeJurusan) {
+                // Format permanent: 6[jurusan][tahun][urut]
+                $kodeJurusan = strtoupper($kodeJurusan);
+                $sequenceName = "siswa_jurusan_{$kodeJurusan}";
+                
+                // Lock sequence untuk jurusan ini
+                $sequence = DB::table('sequence_ids')
+                    ->where('sequence_name', $sequenceName)
+                    ->lockForUpdate()
+                    ->first();
+                
+                if (!$sequence) {
+                    // Cari nilai awal dari data existing
+                    $maxId = Siswa::where('id_siswa', 'like', "6{$kodeJurusan}{$tahun}___")
+                        ->max('id_siswa');
+                    
+                    $currentValue = 0;
+                    if ($maxId && preg_match("/^6{$kodeJurusan}{$tahun}(\d{3})$/", $maxId, $matches)) {
+                        $currentValue = (int)$matches[1];
+                    }
+                    
+                    DB::table('sequence_ids')->insert([
+                        'sequence_name' => $sequenceName,
+                        'current_value' => $currentValue,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } else {
+                    $currentValue = $sequence->current_value;
+                }
+                
+                $nextValue = $currentValue + 1;
+                
+                DB::table('sequence_ids')
+                    ->where('sequence_name', $sequenceName)
+                    ->update([
+                        'current_value' => $nextValue,
+                        'updated_at' => now()
+                    ]);
+                
+                $formattedId = "6{$kodeJurusan}{$tahun}" . str_pad($nextValue, 3, '0', STR_PAD_LEFT);
+                
+            } else {
+                // Format temporary: 6[tahun][urut]
+                $sequenceName = 'siswa_temp';
+                
+                $sequence = DB::table('sequence_ids')
+                    ->where('sequence_name', $sequenceName)
+                    ->lockForUpdate()
+                    ->first();
+                
+                if (!$sequence) {
+                    // Cari nilai awal dari data existing
+                    $maxId = Siswa::where('id_siswa', 'like', "6{$tahun}___")
+                        ->where('id_siswa', 'not like', "6__{$tahun}%") // Exclude yang ada kode jurusan
+                        ->max('id_siswa');
+                    
+                    $currentValue = 0;
+                    if ($maxId && preg_match("/^6{$tahun}(\d{3})$/", $maxId, $matches)) {
+                        $currentValue = (int)$matches[1];
+                    }
+                    
+                    DB::table('sequence_ids')->insert([
+                        'sequence_name' => $sequenceName,
+                        'current_value' => $currentValue,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } else {
+                    $currentValue = $sequence->current_value;
+                }
+                
+                $nextValue = $currentValue + 1;
+                
+                DB::table('sequence_ids')
+                    ->where('sequence_name', $sequenceName)
+                    ->update([
+                        'current_value' => $nextValue,
+                        'updated_at' => now()
+                    ]);
+                
+                $formattedId = "6{$tahun}" . str_pad($nextValue, 3, '0', STR_PAD_LEFT);
+            }
+            
+            DB::commit();
+            
+            Log::info('Generated actual siswa ID', [
+                'sequence_name' => $sequenceName,
+                'sequence_value' => $nextValue,
+                'formatted_id' => $formattedId,
+                'with_jurusan' => $withJurusan,
+                'note' => 'Actual sequence incremented'
+            ]);
+            
+            return $formattedId;
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error generating sequence ID: ' . $e->getMessage());
+            
+            // Fallback method
+            $tahun = date('y');
+            
+            if ($withJurusan && $kodeJurusan) {
+                // Fallback untuk permanent ID
+                $lastId = Siswa::where('id_siswa', 'like', "6{$kodeJurusan}{$tahun}%")
+                    ->orderBy('id_siswa', 'desc')
+                    ->first();
+                
+                if ($lastId) {
+                    $lastNumber = intval(substr($lastId->id_siswa, -3));
+                    $nextNumber = $lastNumber + 1;
+                } else {
+                    $nextNumber = 1;
+                }
+                
+                return "6{$kodeJurusan}{$tahun}" . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+                
+            } else {
+                // Fallback untuk temporary ID
+                $lastId = Siswa::where('id_siswa', 'like', "6{$tahun}%")
+                    ->where('id_siswa', 'not like', "6__{$tahun}%")
+                    ->orderBy('id_siswa', 'desc')
+                    ->first();
+                
+                if ($lastId) {
+                    $lastNumber = intval(substr($lastId->id_siswa, 3));
+                    $nextNumber = $lastNumber + 1;
+                } else {
+                    $nextNumber = 1;
+                }
+                
+                return "6{$tahun}" . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            }
+        }
+    }
+    
+    /**
+     * Check apakah ID adalah temporary atau permanent
+     */
+    private function isTemporaryId($siswaId)
+    {
+        $tahun = date('y');
+        return preg_match("/^6{$tahun}\d{3}$/", $siswaId);
+    }
+    
+    /**
+     * Check apakah ID adalah permanent
+     */
+    private function isPermanentId($siswaId)
+    {
+        $tahun = date('y');
+        return preg_match("/^6[A-Z]{$tahun}\d{3}$/", $siswaId);
+    }
+    
+    /**
+     * Parse informasi dari ID siswa
+     */
+    private function parseIdSiswa($siswaId)
+    {
+        $tahun = date('y');
+        
+        // Cek permanent ID
+        if (preg_match("/^6([A-Z])({$tahun})(\d{3})$/", $siswaId, $matches)) {
+            return [
+                'type' => 'permanent',
+                'kode_jurusan' => $matches[1],
+                'tahun' => '20' . $matches[2],
+                'nomor_urut' => (int)$matches[3]
+            ];
+        }
+        
+        // Cek temporary ID
+        if (preg_match("/^6({$tahun})(\d{3})$/", $siswaId, $matches)) {
+            return [
+                'type' => 'temporary',
+                'kode_jurusan' => null,
+                'tahun' => '20' . $matches[1],
+                'nomor_urut' => (int)$matches[2]
+            ];
+        }
+        
+        return null;
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -293,26 +577,11 @@ class SiswaController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menambah siswa baru.');
         }
         
-        // Generate ID berikutnya TANPA jurusan (format: 625001)
-        $nextId = $this->getNextSequenceId(false);
+        // GUNAKAN previewNextId() untuk tampilan saja, TIDAK increment sequence
+        $nextId = $this->previewNextId();
         
         return view('siswa.create', compact('nextId'));
     }
-
-private function getNextSequenceId($includeJurusan = false)
-{
-    $lastId = \DB::table('siswas')->max('id_siswa');
-
-    // Jika null atau bukan angka, mulai dari 625001
-    if (!is_numeric($lastId)) {
-        return 625003;
-    }
-
-    return (int)$lastId + 1;
-}
-
-
-    
 
     /**
      * Store a newly created resource in storage.
@@ -341,6 +610,9 @@ private function getNextSequenceId($includeJurusan = false)
             // Persiapkan data siswa
             $siswaData = $request->all();
             
+            // SEKARANG baru generate ID yang sebenarnya dengan increment sequence
+            $siswaData['id_siswa'] = $this->getNextSequenceId(false); // false = temporary ID
+            
             // Pastikan nilai default untuk status_aktif
             if (!isset($siswaData['status_aktif'])) {
                 $siswaData['status_aktif'] = 1;
@@ -351,13 +623,20 @@ private function getNextSequenceId($includeJurusan = false)
             
             DB::commit();
             
-            return $this->handleSuccessRedirect('create', $siswa->id_siswa, 'Siswa berhasil ditambahkan.');
+            Log::info('Siswa berhasil ditambahkan', [
+                'id_siswa' => $siswa->id_siswa,
+                'nama_siswa' => $siswa->nama_siswa
+            ]);
+            
+            return $this->handleSuccessRedirect('create', $siswa->id_siswa, 
+                'Siswa berhasil ditambahkan dengan ID: ' . $siswa->id_siswa);
                 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error saat menambahkan siswa: ' . $e->getMessage());
             
-            return $this->handleErrorRedirect('create', null, 'Terjadi kesalahan. Siswa gagal ditambahkan: ' . $e->getMessage(), true);
+            return $this->handleErrorRedirect('create', null, 
+                'Terjadi kesalahan. Siswa gagal ditambahkan: ' . $e->getMessage(), true);
         }
     }
 

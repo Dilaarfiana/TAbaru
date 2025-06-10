@@ -25,12 +25,12 @@
                         <i class="fas fa-chevron-down toggle-icon text-xs transition-transform duration-200"></i>
                     </button>
                     <ul id="master-submenu" class="submenu pl-6 mt-1 space-y-1 py-1 mb-2">
+                        <li><a href="{{ route('jurusan.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-graduation-cap w-5 text-center"></i><span class="ml-2">Data Jurusan</span></a></li>
+                        <li><a href="{{ route('kelas.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-chalkboard w-5 text-center"></i><span class="ml-2">Data Kelas</span></a></li>
                         <li><a href="{{ route('siswa.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-user-graduate w-5 text-center"></i><span class="ml-2">Data Siswa</span></a></li>
                         <li><a href="{{ route('orangtua.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-users w-5 text-center"></i><span class="ml-2">Data Orang Tua</span></a></li>
                         <li><a href="{{ route('petugasuks.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-first-aid w-5 text-center"></i><span class="ml-2">Data Petugas UKS</span></a></li>
                         <li><a href="{{ route('dokter.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-user-md w-5 text-center"></i><span class="ml-2">Data Dokter</span></a></li>
-                        <li><a href="{{ route('kelas.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-chalkboard w-5 text-center"></i><span class="ml-2">Data Kelas</span></a></li>
-                        <li><a href="{{ route('jurusan.index') }}" class="flex items-center text-gray-600 hover:text-indigo-600 py-1.5 px-2 rounded-md"><i class="fas fa-graduation-cap w-5 text-center"></i><span class="ml-2">Data Jurusan</span></a></li>
                     </ul>
                 </li>
             </ul>

@@ -51,13 +51,13 @@
                 <div class="ml-3">
                     <p class="text-sm text-blue-700">
                         Kode Kelas akan dibuat otomatis menggunakan format: <span class="font-mono font-medium">KL001, KL002</span> dst.
-                        Pastikan memilih Jurusan yang sesuai untuk kelas ini. Jumlah siswa akan dihitung otomatis berdasarkan siswa yang terdaftar.
+                        Nama kelas bisa berupa format sederhana seperti <span class="font-medium">"1", "2A", "XA1", "XI IPA 1"</span> sesuai kebutuhan sekolah Anda.
                     </p>
                 </div>
             </div>
         </div>
 
-        <form action="{{ route('kelas.store') }}" method="POST">
+        <form action="{{ route('kelas.store') }}" method="POST" id="formKelas">
             @csrf
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                 <!-- Kode Kelas (Auto-generated, hidden) -->
@@ -77,7 +77,7 @@
                         <input type="text" 
                                id="Kode_Kelas_preview" 
                                value="{{ old('Kode_Kelas', $nextId) }}" 
-                               class="pl-10 block w-full bg-gray-50 border-0 rounded-md h-10 focus:ring-0 focus:outline-none"
+                               class="pl-10 block w-full bg-gray-50 border-0 rounded-md h-10 focus:ring-0 focus:outline-none text-gray-600"
                                readonly disabled>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">
@@ -101,10 +101,20 @@
                                name="Nama_Kelas" 
                                value="{{ old('Nama_Kelas') }}" 
                                required 
-                               maxlength="20" 
-                               placeholder="Contoh: X IPA 1"
-                               class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('Nama_Kelas') border-red-300 @enderror">
+                               maxlength="30" 
+                               placeholder="Contoh: 1, 2A, XA1, XI IPA 1"
+                               class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('Nama_Kelas') border-red-300 @enderror"
+                               oninput="updatePreviewNamaKelas()">
                     </div>
+                    <div class="mt-2">
+                        <p class="text-xs text-gray-500">
+                            <span class="font-medium">Preview nama lengkap:</span> 
+                            <span id="preview_nama_lengkap" class="text-blue-600 font-medium">-</span>
+                        </p>
+                    </div>
+                    @error('Nama_Kelas')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Jurusan -->
@@ -123,10 +133,13 @@
                         <select id="Kode_Jurusan" 
                                 name="Kode_Jurusan" 
                                 required
+                                onchange="updatePreviewNamaKelas()"
                                 class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none @error('Kode_Jurusan') border-red-300 @enderror">
                             <option value="">-- Pilih Jurusan --</option>
                             @foreach ($jurusan as $jur)
-                                <option value="{{ $jur->Kode_Jurusan }}" {{ (old('Kode_Jurusan', $selectedJurusan) == $jur->Kode_Jurusan) ? 'selected' : '' }}>
+                                <option value="{{ $jur->Kode_Jurusan }}" 
+                                        data-nama="{{ $jur->Nama_Jurusan }}"
+                                        {{ (old('Kode_Jurusan', $selectedJurusan) == $jur->Kode_Jurusan) ? 'selected' : '' }}>
                                     {{ $jur->Kode_Jurusan }} - {{ $jur->Nama_Jurusan }}
                                 </option>
                             @endforeach
@@ -137,6 +150,9 @@
                             </svg>
                         </div>
                     </div>
+                    @error('Kode_Jurusan')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
                 
                 <!-- Tahun Ajaran -->
@@ -161,20 +177,23 @@
                     <p class="text-xs text-gray-500 mt-1">
                         Format tahun ajaran: 2024/2025
                     </p>
+                    @error('Tahun_Ajaran')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
             
             <!-- Form Buttons -->
             <div class="mt-8 flex justify-end space-x-3">
                 <button type="button" onclick="window.location.href='{{ route('kelas.index') }}'" 
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                     <svg class="mr-2 h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     Batal
                 </button>
                 <button type="submit" 
-                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                     <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -185,7 +204,8 @@
     </div>
 </div>
 
-<div class="mt-8 bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+<!-- Panduan Pengisian -->
+<div class="mt-8 max-w-5xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
     <div class="p-6 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-gray-200">
         <h2 class="text-lg font-bold text-gray-800">
             <i class="fas fa-book mr-2 text-blue-500"></i>Panduan Pengisian Data Kelas
@@ -200,15 +220,45 @@
                 <div>
                     <h3 class="font-bold text-base mb-2">Tips Pengisian Form Kelas</h3>
                     <ul class="list-disc list-inside text-sm space-y-2 ml-2">
-                        <li>Kode Kelas akan terisi otomatis dengan format KL001, KL002, dst.</li>
-                        <li>Nama Kelas sebaiknya berisi tingkat dan nama jurusan, misalnya "X IPA 1", "XI IPS 2".</li>
-                        <li>Tahun Ajaran terisi otomatis dengan format "{{ $currentTahunAjaran }}" berdasarkan tanggal saat ini.</li>
-                        <li>Pastikan memilih Jurusan yang sesuai untuk kelas ini.</li>
-                        <li>Jumlah siswa akan dihitung otomatis berdasarkan siswa yang terdaftar di kelas ini.</li>
+                        <li><strong>Kode Kelas:</strong> Terisi otomatis dengan format KL001, KL002, dst.</li>
+                        <li><strong>Nama Kelas:</strong> Bisa berupa format sederhana seperti:
+                            <ul class="list-disc list-inside ml-4 mt-1 space-y-1">
+                                <li><span class="font-mono bg-gray-100 px-1 rounded">"1"</span> untuk kelas 1</li>
+                                <li><span class="font-mono bg-gray-100 px-1 rounded">"2A"</span> untuk kelas 2A</li>
+                                <li><span class="font-mono bg-gray-100 px-1 rounded">"XA1"</span> untuk kelas X jurusan A1</li>
+                                <li><span class="font-mono bg-gray-100 px-1 rounded">"XI IPA 1"</span> untuk format lengkap</li>
+                            </ul>
+                        </li>
+                        <li><strong>Jurusan:</strong> Pilih jurusan yang sesuai untuk kelas ini.</li>
+                        <li><strong>Tahun Ajaran:</strong> Terisi otomatis dengan format "{{ $currentTahunAjaran }}".</li>
+                        <li><strong>Jumlah Siswa:</strong> Akan dihitung otomatis saat siswa didaftarkan ke kelas.</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function updatePreviewNamaKelas() {
+    const namaKelas = document.getElementById('Nama_Kelas').value;
+    const jurusanSelect = document.getElementById('Kode_Jurusan');
+    const selectedOption = jurusanSelect.options[jurusanSelect.selectedIndex];
+    const namaJurusan = selectedOption.getAttribute('data-nama') || '';
+    const previewElement = document.getElementById('preview_nama_lengkap');
+    
+    if (namaKelas && namaJurusan) {
+        previewElement.textContent = `Kelas ${namaKelas} - ${namaJurusan}`;
+    } else if (namaKelas) {
+        previewElement.textContent = `Kelas ${namaKelas}`;
+    } else {
+        previewElement.textContent = '-';
+    }
+}
+
+// Initialize preview on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updatePreviewNamaKelas();
+});
+</script>
 @endsection

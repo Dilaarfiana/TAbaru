@@ -771,96 +771,151 @@ class AlokasiController extends Controller
     * @return string ID Siswa yang dihasilkan dengan format yang sesuai
     */
    private function getNextSequenceId($withJurusan = false, $kodeJurusan = null)
-   {
-       try {
-           // Mulai transaction
-           DB::beginTransaction();
-           
-           // Ambil nilai sequence saat ini dalam lock
-           $sequence = DB::table('sequence_ids')
-               ->where('sequence_name', 'siswa_id')
-               ->lockForUpdate()
-               ->first();
-           
-           // Jika sequence belum ada, buat baru
-           if (!$sequence) {
-               DB::table('sequence_ids')->insert([
-                   'sequence_name' => 'siswa_id',
-                   'current_value' => 0
-               ]);
-               $currentValue = 0;
-           } else {
-               $currentValue = $sequence->current_value;
-           }
-           
-           // Increment nilai sequence
-           $nextValue = $currentValue + 1;
-           
-           // Update nilai sequence
-           DB::table('sequence_ids')
-               ->where('sequence_name', 'siswa_id')
-               ->update(['current_value' => $nextValue]);
-           
-           // Format ID sesuai kebutuhan:
-           $tahun = date('y');
-           
-           if ($withJurusan && $kodeJurusan) {
-               // Format dengan jurusan: 6 + kode jurusan + tahun (yy) + nomor urut (3 digit)
-               $formattedId = "6{$kodeJurusan}{$tahun}" . str_pad($nextValue, 3, '0', STR_PAD_LEFT);
-           } else {
-               // Format tanpa jurusan: 6 + tahun (yy) + nomor urut (3 digit) 
-               $formattedId = "6{$tahun}" . str_pad($nextValue, 3, '0', STR_PAD_LEFT);
-           }
-           
-           // Commit transaction
-           DB::commit();
-           
-           Log::info('Generated next sequence ID', [
-               'id' => $formattedId, 
-               'sequence_value' => $nextValue,
-               'with_jurusan' => $withJurusan
-           ]);
-           
-           return $formattedId;
-           
-       } catch (\Exception $e) {
-           // Rollback transaction jika terjadi error
-           DB::rollBack();
-           
-           // Log error
-           Log::error('Error generating sequence ID: ' . $e->getMessage());
-           
-           // Fallback ke metode lama jika terjadi error
-           $tahun = date('y');
-           
-           if ($withJurusan && $kodeJurusan) {
-               // Fallback dengan format jurusan
-               $lastId = Siswa::where('id_siswa', 'like', "6{$kodeJurusan}{$tahun}%")
-                   ->orderBy('id_siswa', 'desc')
-                   ->first();
-           } else {
-               // Fallback dengan format tanpa jurusan
-               $lastId = Siswa::where('id_siswa', 'like', "6{$tahun}%")
-                   ->orderBy('id_siswa', 'desc')
-                   ->first();
-           }
-           
-           if ($lastId) {
-               $lastNumber = intval(substr($lastId->id_siswa, -3));
-               $nextNumber = $lastNumber + 1;
-           } else {
-               $nextNumber = 1;
-           }
-           
-           $formattedNumber = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-           
-           if ($withJurusan && $kodeJurusan) {
-               return "6{$kodeJurusan}{$tahun}{$formattedNumber}";
-           } else {
-               return "6{$tahun}{$formattedNumber}";
-           }
-       }
-   }
+{
+    try {
+        // Mulai transaction
+        DB::beginTransaction();
+        
+        $tahun = date('y'); // Tahun 2 digit (25 untuk 2025)
+        
+        if ($withJurusan && $kodeJurusan) {
+            // Untuk siswa dengan jurusan, gunakan sequence terpisah per jurusan
+            $sequenceName = "siswa_jurusan_{$kodeJurusan}";
+            
+            // Ambil nilai sequence untuk jurusan ini
+            $sequence = DB::table('sequence_ids')
+                ->where('sequence_name', $sequenceName)
+                ->lockForUpdate()
+                ->first();
+            
+            // Jika sequence belum ada untuk jurusan ini, buat baru dimulai dari 0
+            if (!$sequence) {
+                DB::table('sequence_ids')->insert([
+                    'sequence_name' => $sequenceName,
+                    'current_value' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+                $currentValue = 0;
+            } else {
+                $currentValue = $sequence->current_value;
+            }
+            
+            // Increment nilai sequence
+            $nextValue = $currentValue + 1;
+            
+            // Update nilai sequence
+            DB::table('sequence_ids')
+                ->where('sequence_name', $sequenceName)
+                ->update([
+                    'current_value' => $nextValue,
+                    'updated_at' => now()
+                ]);
+            
+            // Format ID dengan jurusan: 6 + kode jurusan + tahun (yy) + nomor urut (3 digit)
+            $formattedId = "6{$kodeJurusan}{$tahun}" . str_pad($nextValue, 3, '0', STR_PAD_LEFT);
+            
+        } else {
+            // Untuk siswa tanpa jurusan, gunakan sequence biasa
+            $sequenceName = 'siswa_id';
+            
+            $sequence = DB::table('sequence_ids')
+                ->where('sequence_name', $sequenceName)
+                ->lockForUpdate()
+                ->first();
+            
+            if (!$sequence) {
+                // Cari ID siswa terakhir untuk menentukan nilai awal
+                $maxId = Siswa::where('id_siswa', 'like', "6{$tahun}%")
+                    ->where('id_siswa', 'not like', "6__{$tahun}%") // Exclude yang ada kode jurusan
+                    ->max('id_siswa');
+                
+                if ($maxId && is_numeric(substr($maxId, 3))) {
+                    $currentValue = (int)substr($maxId, 3);
+                } else {
+                    $currentValue = 0;
+                }
+                
+                DB::table('sequence_ids')->insert([
+                    'sequence_name' => $sequenceName,
+                    'current_value' => $currentValue,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            } else {
+                $currentValue = $sequence->current_value;
+            }
+            
+            // Increment nilai sequence
+            $nextValue = $currentValue + 1;
+            
+            // Update nilai sequence
+            DB::table('sequence_ids')
+                ->where('sequence_name', $sequenceName)
+                ->update([
+                    'current_value' => $nextValue,
+                    'updated_at' => now()
+                ]);
+            
+            // Format ID tanpa jurusan: 6 + tahun (yy) + nomor urut (3 digit)
+            $formattedId = "6{$tahun}" . str_pad($nextValue, 3, '0', STR_PAD_LEFT);
+        }
+        
+        // Commit transaction
+        DB::commit();
+        
+        Log::info('Generated next sequence ID', [
+            'id' => $formattedId,
+            'sequence_value' => $nextValue,
+            'with_jurusan' => $withJurusan,
+            'kode_jurusan' => $kodeJurusan,
+            'sequence_name' => $sequenceName ?? 'siswa_id'
+        ]);
+        
+        return $formattedId;
+        
+    } catch (\Exception $e) {
+        // Rollback transaction jika terjadi error
+        DB::rollBack();
+        
+        Log::error('Error generating sequence ID: ' . $e->getMessage());
+        
+        // Fallback method
+        $tahun = date('y');
+        
+        if ($withJurusan && $kodeJurusan) {
+            // Fallback untuk format dengan jurusan
+            $lastId = Siswa::where('id_siswa', 'like', "6{$kodeJurusan}{$tahun}%")
+                ->orderBy('id_siswa', 'desc')
+                ->first();
+            
+            if ($lastId) {
+                $lastNumber = intval(substr($lastId->id_siswa, -3));
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+            
+            return "6{$kodeJurusan}{$tahun}" . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            
+        } else {
+            // Fallback untuk format tanpa jurusan
+            $lastId = Siswa::where('id_siswa', 'like', "6{$tahun}%")
+                ->where('id_siswa', 'not like', "6__{$tahun}%") // Exclude yang ada kode jurusan
+                ->orderBy('id_siswa', 'desc')
+                ->first();
+            
+            if ($lastId) {
+                $lastNumber = intval(substr($lastId->id_siswa, 3));
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+            
+            return "6{$tahun}" . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        }
+    }
+}
    
    /**
     * Mendapatkan ID DetailSiswa berikutnya dari sequence

@@ -1,5 +1,4 @@
 {{-- File: resources/views/pemeriksaan_fisik/create.blade.php --}}
-{{-- ADMIN: FULL ACCESS, PETUGAS: CRU ACCESS, DOKTER: READ ONLY, ORANG TUA: NO ACCESS --}}
 @extends('layouts.app')
 
 @section('page_title', 'Tambah Pemeriksaan Fisik')
@@ -12,20 +11,6 @@
     $isDokter = $userLevel === 'dokter';
     $isOrangTua = $userLevel === 'orang_tua';
     
-    // Blokir akses yang tidak diizinkan
-    if ($isDokter) {
-        abort(403, 'Akses ditolak. Dokter hanya memiliki akses baca untuk data pemeriksaan fisik.');
-    }
-    
-    if ($isOrangTua) {
-        abort(403, 'Akses ditolak. Orang tua tidak memiliki izin untuk mengakses halaman pemeriksaan fisik.');
-    }
-    
-    // Only admin and petugas can access this page
-    if (!$isAdmin && !$isPetugas) {
-        abort(403, 'Anda tidak memiliki akses untuk menambah pemeriksaan fisik.');
-    }
-    
     // Define routes based on user role
     $baseRoute = $isAdmin ? 'pemeriksaan_fisik' : 'petugas.pemeriksaan_fisik';
     $indexRoute = $baseRoute . '.index';
@@ -34,53 +19,6 @@
     $showRoute = $baseRoute . '.show';
     $editRoute = $baseRoute . '.edit';
 @endphp
-
-<!-- Error Modal untuk Unauthorized Access (Backup jika PHP check tidak jalan) -->
-@if($isOrangTua || $isDokter)
-<div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" id="access-denied-modal">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <i class="fas fa-ban text-red-600 text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Akses Ditolak</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500 mb-4">
-                    @if($isOrangTua)
-                        Maaf, orang tua tidak memiliki izin untuk mengakses form tambah pemeriksaan fisik.
-                    @elseif($isDokter)
-                        Maaf, dokter hanya memiliki akses baca untuk data pemeriksaan fisik.
-                    @endif
-                </p>
-                <p class="text-xs text-red-600 font-medium mb-4">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Level akses: {{ ucfirst($userLevel) }} (NO CREATE ACCESS)
-                </p>
-            </div>
-            <div class="items-center px-4 py-3">
-                <button onclick="goBack()" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                    <i class="fas fa-arrow-left mr-2"></i>Kembali
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function goBack() {
-    @if($isDokter)
-        window.location.href = "{{ route('dokter.pemeriksaan_fisik.index') }}";
-    @elseif($isOrangTua)
-        window.location.href = "{{ route('orangtua.dashboard') ?? route('dashboard') }}";
-    @else
-        window.location.href = "{{ route('dashboard') }}";
-    @endif
-}
-setTimeout(function() { goBack(); }, 5000);
-</script>
-
-@stop
-@endif
 
 <div class="p-4 bg-gray-50 min-h-screen">
     <!-- Form Card -->
@@ -98,63 +36,21 @@ setTimeout(function() { goBack(); }, 5000);
                     <span class="ml-3 px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                         <i class="fas fa-user-shield mr-1"></i>Akses Admin
                     </span>
+                @elseif($isDokter)
+                    <span class="ml-3 px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                        <i class="fas fa-user-md mr-1"></i>Akses Dokter
+                    </span>
+                @elseif($isOrangTua)
+                    <span class="ml-3 px-3 py-1 text-xs bg-purple-100 text-purple-800 rounded-full">
+                        <i class="fas fa-users mr-1"></i>Akses Orang Tua
+                    </span>
                 @endif
-                <!-- Security Badge -->
-                <div class="ml-3 bg-red-100 text-red-600 rounded-full px-3 py-1 text-xs font-bold border border-red-200">
-                    <i class="fas fa-shield-alt mr-1"></i> SECURED
-                </div>
             </div>
             <a href="{{ route($indexRoute) }}" class="bg-gray-500 text-white hover:bg-gray-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Kembali ke Daftar
             </a>
         </div>
-
-        <!-- Access Control Warning -->
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-3">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-triangle text-red-500"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-red-700">
-                        <strong>Akses Terbatas:</strong> Halaman ini hanya dapat diakses oleh Administrator dan Petugas UKS. 
-                        Dokter dan orang tua tidak memiliki izin untuk menambah data pemeriksaan fisik.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Access Level Info -->
-        @if($isPetugas)
-        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mx-6 mt-3">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-info-circle text-yellow-500"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-yellow-700">
-                        Anda mengakses form tambah pemeriksaan fisik dengan <strong>Akses Petugas</strong>. 
-                        Anda dapat menambah dan mengedit data pemeriksaan fisik, namun tidak dapat menghapus data.
-                    </p>
-                </div>
-            </div>
-        </div>
-        @elseif($isAdmin)
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mx-6 mt-3">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-info-circle text-blue-500"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-blue-700">
-                        Anda mengakses form tambah pemeriksaan fisik dengan <strong>Akses Administrator</strong>. 
-                        Anda memiliki akses penuh untuk mengelola semua data pemeriksaan fisik.
-                    </p>
-                </div>
-            </div>
-        </div>
-        @endif
         
         <!-- Form Content -->
         <div class="p-6">
@@ -248,49 +144,6 @@ setTimeout(function() { goBack(); }, 5000);
                                 </p>
                             </div>
                         @endif
-                        
-                        <!-- Enhanced Role Information -->
-                        <div class="mt-3 p-3 rounded-lg border {{ $isAdmin ? 'bg-blue-100 border-blue-300' : 'bg-yellow-100 border-yellow-300' }}">
-                            <div class="flex items-start">
-                                <i class="fas fa-user-tag {{ $isAdmin ? 'text-blue-600' : 'text-yellow-600' }} mr-2 mt-0.5"></i>
-                                <div>
-                                    <p class="text-sm {{ $isAdmin ? 'text-blue-800' : 'text-yellow-800' }} font-medium">
-                                        Level Akses Anda: 
-                                        @if($isAdmin)
-                                            Administrator
-                                        @elseif($isPetugas)
-                                            Petugas UKS
-                                        @endif
-                                    </p>
-                                    <p class="text-xs {{ $isAdmin ? 'text-blue-700' : 'text-yellow-700' }} mt-1">
-                                        @if($isAdmin)
-                                            • Dapat mengelola semua data pemeriksaan fisik (tambah, edit, hapus)
-                                            • Akses ke semua fitur dan laporan
-                                            • Dapat mengekspor data pemeriksaan
-                                        @elseif($isPetugas)
-                                            • Dapat menambah dan mengedit data pemeriksaan fisik
-                                            • Tidak dapat menghapus data yang sudah tersimpan
-                                            • Akses terbatas pada fitur tertentu
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Security Information -->
-                        <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <div class="flex items-center">
-                                <i class="fas fa-shield-alt text-red-500 mr-2"></i>
-                                <div>
-                                    <p class="text-sm text-red-700 font-medium">Informasi Keamanan</p>
-                                    <p class="text-xs text-red-600 mt-1">
-                                        • Dokter: Hanya akses baca (tidak dapat menambah/edit)
-                                        • Orang Tua: Tidak memiliki akses sama sekali
-                                        • Semua aktivitas tercatat dalam sistem audit
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -713,23 +566,7 @@ setTimeout(function() { goBack(); }, 5000);
                 </div>
 
                 <!-- Form Buttons -->
-                <div class="flex justify-between items-center pt-6 border-t border-gray-200">
-                    <!-- Role Information Footer -->
-                    <div class="text-xs text-gray-600">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        <span>
-                            @if($isAdmin)
-                                <strong>Administrator:</strong> Data akan tersimpan dengan akses penuh
-                            @elseif($isPetugas)
-                                <strong>Petugas:</strong> Data akan tersimpan dengan akses terbatas
-                            @endif
-                        </span>
-                        <div class="mt-1 text-red-600 font-medium">
-                            <i class="fas fa-shield-alt mr-1"></i>
-                            Akses terbatas: Dokter (baca saja) | Orang Tua (tidak ada akses)
-                        </div>
-                    </div>
-
+                <div class="flex justify-end items-center pt-6 border-t border-gray-200">
                     <div class="flex space-x-3">
                         <button type="button" onclick="window.location.href='{{ route($indexRoute) }}'" 
                             class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
@@ -833,23 +670,6 @@ setTimeout(function() { goBack(); }, 5000);
     
     // Enhanced form interactions
     document.addEventListener('DOMContentLoaded', function() {
-        // Enhanced security check
-        const userLevel = '{{ $userLevel }}';
-        if (userLevel === 'orang_tua' || userLevel === 'dokter') {
-            let message = userLevel === 'orang_tua' 
-                ? 'Akses ditolak! Orang tua tidak memiliki izin untuk mengakses halaman ini.'
-                : 'Akses ditolak! Dokter hanya memiliki akses baca untuk data pemeriksaan fisik.';
-            
-            alert(message);
-            
-            if (userLevel === 'orang_tua') {
-                window.location.href = '{{ route("dashboard") }}';
-            } else {
-                window.location.href = '{{ route("dokter.pemeriksaan_fisik.index") }}';
-            }
-            return;
-        }
-        
         const heightInput = document.getElementById('tinggi_badan');
         const weightInput = document.getElementById('berat_badan');
         const detailSelect = document.getElementById('id_detprx');
@@ -978,9 +798,6 @@ setTimeout(function() { goBack(); }, 5000);
             }
         `;
         document.head.appendChild(style);
-        
-        // Security logging
-        console.log('Akses form tambah pemeriksaan fisik oleh: ' + userLevel);
     });
 </script>
 @endpush

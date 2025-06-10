@@ -8,6 +8,7 @@ use App\Models\DetailSiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class KelasController extends Controller
 {
@@ -33,6 +34,9 @@ class KelasController extends Controller
         return view('kelas.create', compact('nextId', 'jurusan', 'selectedJurusan', 'currentTahunAjaran'));
     }
     
+    /**
+     * Menyimpan kelas baru ke database.
+     */
     public function store(Request $request)
     {
         // Jika Kode_Kelas kosong, generate yang baru
@@ -49,9 +53,17 @@ class KelasController extends Controller
         
         $validator = Validator::make($request->all(), [
             'Kode_Kelas' => 'required|string|max:5|unique:Kelas,Kode_Kelas',
-            'Nama_Kelas' => 'required|string|max:20|unique:Kelas,Nama_Kelas',
+            'Nama_Kelas' => 'required|string|max:30', // Hapus unique validation untuk fleksibilitas
             'Kode_Jurusan' => 'required|exists:Jurusan,Kode_Jurusan',
             'Tahun_Ajaran' => 'nullable|string|max:10',
+        ], [
+            'Kode_Kelas.required' => 'Kode kelas harus diisi.',
+            'Kode_Kelas.unique' => 'Kode kelas sudah ada.',
+            'Nama_Kelas.required' => 'Nama kelas harus diisi.',
+            'Nama_Kelas.max' => 'Nama kelas maksimal 30 karakter.',
+            'Kode_Jurusan.required' => 'Jurusan harus dipilih.',
+            'Kode_Jurusan.exists' => 'Jurusan yang dipilih tidak valid.',
+            'Tahun_Ajaran.max' => 'Tahun ajaran maksimal 10 karakter.',
         ]);
 
         if ($validator->fails()) {
@@ -60,13 +72,24 @@ class KelasController extends Controller
                 ->withInput();
         }
 
-        // Hapus input Jumlah_Siswa dari request
-        $requestData = $request->except('Jumlah_Siswa');
-        
-        Kelas::create($requestData);
-        
-        return redirect()->route('kelas.index')
-            ->with('success', 'Kelas berhasil ditambahkan!');
+        try {
+            DB::beginTransaction();
+            
+            // Hapus input Jumlah_Siswa dari request karena akan dihitung otomatis
+            $requestData = $request->except('Jumlah_Siswa');
+            
+            Kelas::create($requestData);
+            
+            DB::commit();
+            
+            return redirect()->route('kelas.index')
+                ->with('success', 'Kelas berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('kelas.create')
+                ->with('error', 'Gagal menambahkan kelas: ' . $e->getMessage())
+                ->withInput();
+        }
     }
     
 
@@ -110,10 +133,18 @@ class KelasController extends Controller
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
-            'Nama_Kelas' => 'required|string|max:20',
+            'Nama_Kelas' => 'required|string|max:30',
             'Tahun_Ajaran' => 'nullable|string|max:10',
             'Kode_Jurusan' => 'required|exists:Jurusan,Kode_Jurusan',
             'Jumlah_Siswa' => 'nullable|integer|min:0',
+        ], [
+            'Nama_Kelas.required' => 'Nama kelas harus diisi.',
+            'Nama_Kelas.max' => 'Nama kelas maksimal 30 karakter.',
+            'Kode_Jurusan.required' => 'Jurusan harus dipilih.',
+            'Kode_Jurusan.exists' => 'Jurusan yang dipilih tidak valid.',
+            'Tahun_Ajaran.max' => 'Tahun ajaran maksimal 10 karakter.',
+            'Jumlah_Siswa.integer' => 'Jumlah siswa harus berupa angka.',
+            'Jumlah_Siswa.min' => 'Jumlah siswa minimal 0.',
         ]);
 
         if ($validator->fails()) {
@@ -122,11 +153,22 @@ class KelasController extends Controller
                 ->withInput();
         }
 
-        $kelas = Kelas::findOrFail($id);
-        $kelas->update($request->all());
-        
-        return redirect()->route('kelas.index')
-            ->with('success', 'Kelas berhasil diperbarui!');
+        try {
+            DB::beginTransaction();
+            
+            $kelas = Kelas::findOrFail($id);
+            $kelas->update($request->all());
+            
+            DB::commit();
+            
+            return redirect()->route('kelas.index')
+                ->with('success', 'Kelas berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('kelas.edit', $id)
+                ->with('error', 'Gagal memperbarui kelas: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -167,6 +209,9 @@ class KelasController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'id_siswa' => 'required|exists:siswas,id_siswa',
+        ], [
+            'id_siswa.required' => 'Siswa harus dipilih.',
+            'id_siswa.exists' => 'Siswa tidak ditemukan.',
         ]);
 
         if ($validator->fails()) {
@@ -269,5 +314,53 @@ class KelasController extends Controller
             $kelas->Jumlah_Siswa = $jumlahSiswa;
             $kelas->save();
         }
+    }
+
+    /**
+     * Fungsi untuk mendapatkan daftar kelas berdasarkan jurusan (untuk AJAX)
+     */
+    public function getKelasByJurusan($kode_jurusan)
+    {
+        try {
+            $kelas = Kelas::where('Kode_Jurusan', $kode_jurusan)
+                         ->orderBy('Nama_Kelas')
+                         ->get(['Kode_Kelas', 'Nama_Kelas']);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $kelas
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data kelas: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Fungsi untuk cek ketersediaan nama kelas (untuk validasi AJAX)
+     */
+    public function checkNamaKelas(Request $request)
+    {
+        $namaKelas = $request->input('nama_kelas');
+        $kodeJurusan = $request->input('kode_jurusan');
+        $tahunAjaran = $request->input('tahun_ajaran');
+        $excludeId = $request->input('exclude_id'); // untuk edit
+
+        $query = Kelas::where('Nama_Kelas', $namaKelas)
+                     ->where('Kode_Jurusan', $kodeJurusan)
+                     ->where('Tahun_Ajaran', $tahunAjaran);
+
+        if ($excludeId) {
+            $query->where('Kode_Kelas', '!=', $excludeId);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Nama kelas sudah digunakan di jurusan dan tahun ajaran ini.' : 'Nama kelas tersedia.'
+        ]);
     }
 }

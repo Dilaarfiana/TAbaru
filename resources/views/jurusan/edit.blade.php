@@ -72,39 +72,42 @@
                                 </svg>
                             </div>
                             <input type="text" id="Kode_Jurusan" value="{{ $jurusan->Kode_Jurusan }}" readonly
-                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 bg-gray-50 text-gray-500 cursor-not-allowed">
+                                class="pl-10 block w-full border border-gray-300 rounded-md h-10 bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none">
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Kode jurusan tidak dapat diubah setelah dibuat</p>
                     </div>
 
                     <!-- Nama Jurusan -->
                     <div>
-                        <label for="Nama_Jurusan" class="block text-sm font-medium text-gray-700 mb-1">Nama Jurusan <span class="text-red-500">*</span></label>
+                        <label for="Nama_Jurusan" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nama Jurusan <span class="text-red-500">*</span>
+                        </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                 </svg>
                             </div>
                             <input type="text" id="Nama_Jurusan" name="Nama_Jurusan" value="{{ old('Nama_Jurusan', $jurusan->Nama_Jurusan) }}" required maxlength="30"
                                 class="pl-10 block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 @error('Nama_Jurusan') border-red-300 @enderror">
                         </div>
+                        @error('Nama_Jurusan')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
 
                 <!-- Form Buttons -->
                 <div class="mt-8 flex justify-end space-x-3">
                     <a href="{{ route('jurusan.index') }}"
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                         Batal
-                    </button>
+                    </a>
                     <button type="submit"
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
@@ -125,11 +128,12 @@
                 <h3 class="text-lg font-medium text-gray-800">Detail Jurusan</h3>
             </div>
         </div>
+        
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
                     <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <p class="text-xs font-medium uppercase text-gray-500 mb-1">Kode Jurusan</p>
+                        <p class="text-xs font-medium uppercase text-gray-500 mb-2">Kode Jurusan</p>
                         <div class="flex items-center">
                             <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full bg-blue-100 text-blue-800">
                                 {{ $jurusan->Kode_Jurusan }}
@@ -138,7 +142,7 @@
                     </div>
                     
                     <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <p class="text-xs font-medium uppercase text-gray-500 mb-1">Nama Jurusan</p>
+                        <p class="text-xs font-medium uppercase text-gray-500 mb-2">Nama Jurusan</p>
                         <div class="flex items-center">
                             <span class="text-base font-medium text-gray-800">{{ $jurusan->Nama_Jurusan }}</span>
                         </div>
@@ -147,7 +151,7 @@
                 
                 <div class="space-y-4">
                     <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <p class="text-xs font-medium uppercase text-gray-500 mb-1">Jumlah Kelas</p>
+                        <p class="text-xs font-medium uppercase text-gray-500 mb-2">Jumlah Kelas</p>
                         <div class="flex items-center">
                             <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 {{ $jurusan->kelas->count() }} kelas
@@ -156,7 +160,7 @@
                     </div>
                     
                     <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <p class="text-xs font-medium uppercase text-gray-500 mb-1">Opsi Tambahan</p>
+                        <p class="text-xs font-medium uppercase text-gray-500 mb-2">Opsi Tambahan</p>
                         <div class="mt-2 flex flex-col space-y-2">
                             <a href="{{ route('jurusan.show', $jurusan->Kode_Jurusan) }}" 
                                class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">

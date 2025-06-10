@@ -12,190 +12,126 @@
     $isDokter = $userLevel === 'dokter';
     $isOrangTua = $userLevel === 'orang_tua';
     
-    // Blokir akses orang tua sepenuhnya
+    // BLOCK Orang tua - tidak boleh mengakses pemeriksaan fisik sama sekali
     if ($isOrangTua) {
-        abort(403, 'Akses ditolak. Orang tua tidak memiliki izin untuk mengakses halaman pemeriksaan fisik.');
+        return redirect()->route('dashboard.orangtua')->with('error', 'Akses ditolak. Orang tua tidak memiliki akses ke pemeriksaan fisik.');
     }
     
     // Define routes based on user role
     $baseRoute = $isAdmin ? 'pemeriksaan_fisik' : ($isPetugas ? 'petugas.pemeriksaan_fisik' : 'dokter.pemeriksaan_fisik');
     $indexRoute = $baseRoute . '.index';
     $showRoute = $baseRoute . '.show';
-    
+
     // Routes yang hanya untuk admin dan petugas
+    $editRoute = null;
+    $destroyRoute = null;
+    
     if ($isAdmin) {
-        $createRoute = 'pemeriksaan_fisik.create';
         $editRoute = 'pemeriksaan_fisik.edit';
         $destroyRoute = 'pemeriksaan_fisik.destroy';
     } elseif ($isPetugas) {
-        $createRoute = 'petugas.pemeriksaan_fisik.create';
         $editRoute = 'petugas.pemeriksaan_fisik.edit';
+        // Petugas tidak bisa delete
     }
+    // Dokter tidak bisa edit atau delete
 @endphp
-
-<!-- Error Modal untuk Unauthorized Access (Backup jika PHP check tidak jalan) -->
-@if($isOrangTua)
-<div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" id="access-denied-modal">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <i class="fas fa-ban text-red-600 text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Akses Ditolak</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500 mb-4">
-                    Maaf, Anda tidak memiliki izin untuk mengakses detail pemeriksaan fisik ini.
-                </p>
-                <p class="text-xs text-red-600 font-medium mb-4">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Level akses: Orang Tua (NO ACCESS)
-                </p>
-            </div>
-            <div class="items-center px-4 py-3">
-                <button onclick="goBack()" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
-                    <i class="fas fa-arrow-left mr-2"></i>Kembali
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function goBack() {
-    window.location.href = "{{ route('orangtua.dashboard') ?? route('dashboard') }}";
-}
-setTimeout(function() { goBack(); }, 5000);
-</script>
-
-@stop
-@endif
 
 <div class="p-4 bg-gray-50 min-h-screen">
     <!-- Detail Card -->
-    <div class="max-w-5xl mx-auto bg-white rounded-md shadow-md">
+    <div class="max-w-7xl mx-auto bg-white rounded-md shadow-md">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-t-md px-6 py-4 flex justify-between items-center">
+        <div class="bg-white rounded-t-md px-6 py-4 flex justify-between items-center border-b">
             <div class="flex items-center">
-                <i class="fas fa-eye text-white mr-3 text-xl"></i>
-                <h2 class="text-xl font-bold text-white">Detail Pemeriksaan Fisik</h2>
-                @if($isDokter)
-                    <span class="ml-3 px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                        <i class="fas fa-stethoscope mr-1"></i>Akses Dokter
-                    </span>
-                @elseif($isPetugas)
-                    <span class="ml-3 px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
-                        <i class="fas fa-user-tie mr-1"></i>Akses Petugas
-                    </span>
-                @elseif($isAdmin)
-                    <span class="ml-3 px-3 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                        <i class="fas fa-user-shield mr-1"></i>Akses Admin
-                    </span>
-                @endif
-                <!-- Security Badge -->
-                <div class="ml-3 bg-white text-red-600 rounded-full px-3 py-1 text-xs font-bold border border-red-200">
-                    <i class="fas fa-shield-alt mr-1"></i> SECURED
-                </div>
-            </div>
-            <div class="flex gap-2">
-                @if($isAdmin || $isPetugas)
-                <a href="{{ route($editRoute, $pemeriksaanFisik->id_prefisik) }}" class="bg-white text-blue-600 hover:bg-blue-50 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
-                    <i class="fas fa-edit mr-2"></i>
-                    Edit Data
-                </a>
-                @endif
-                <a href="{{ route($indexRoute) }}" class="bg-blue-700 text-white hover:bg-blue-800 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Kembali ke Daftar
-                </a>
-            </div>
-        </div>
-
-        <!-- Access Control Warning -->
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-3">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-triangle text-red-500"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-red-700">
-                        <strong>Akses Terbatas:</strong> Halaman ini hanya dapat diakses oleh tenaga medis (Admin, Petugas, Dokter). 
-                        Orang tua tidak memiliki izin untuk mengakses detail pemeriksaan fisik ini.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Access Level Info -->
-        @if($isDokter)
-        <div class="bg-green-50 border-l-4 border-green-500 p-4 mx-6 mt-3">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-info-circle text-green-500"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-green-700">
-                        Anda melihat detail pemeriksaan fisik dengan <strong>Akses Dokter</strong>. 
-                        Anda dapat melihat semua data pemeriksaan namun tidak dapat mengubah atau menghapus data.
-                    </p>
-                </div>
-            </div>
-        </div>
-        @elseif($isPetugas)
-        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mx-6 mt-3">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-info-circle text-yellow-500"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-yellow-700">
-                        Anda melihat detail pemeriksaan fisik dengan <strong>Akses Petugas</strong>. 
-                        Anda dapat melihat dan mengedit data pemeriksaan, namun tidak dapat menghapus data.
-                    </p>
-                </div>
-            </div>
-        </div>
-        @elseif($isAdmin)
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mx-6 mt-3">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-info-circle text-blue-500"></i>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-blue-700">
-                        Anda melihat detail pemeriksaan fisik dengan <strong>Akses Administrator</strong>. 
-                        Anda memiliki akses penuh untuk melihat, mengedit, dan menghapus data pemeriksaan.
-                    </p>
-                </div>
-            </div>
-        </div>
-        @endif
-        
-        <!-- Badge ID Pemeriksaan -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-blue-100">
-            <div class="flex justify-center">
-                <div class="bg-white py-4 px-8 rounded-full shadow-sm border border-blue-200 flex items-center">
-                    <div class="bg-blue-100 rounded-full p-3 mr-4">
-                        <i class="fas fa-stethoscope text-blue-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-500">ID Pemeriksaan Fisik</div>
-                        <div class="font-mono font-bold text-2xl text-blue-600">{{ $pemeriksaanFisik->id_prefisik }}</div>
-                        <div class="text-xs text-gray-500 mt-1">
-                            @if($isDokter)
-                                <span class="text-green-600">View Only Access</span>
-                            @elseif($isPetugas)
-                                <span class="text-yellow-600">Edit Access</span>
-                            @elseif($isAdmin)
-                                <span class="text-red-600">Full Access</span>
-                            @endif
-                        </div>
+                <i class="fas fa-eye text-purple-500 mr-3 text-xl"></i>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">Detail Pemeriksaan Fisik</h2>
+                    <div class="flex items-center mt-1">
+                        <span class="text-sm text-gray-600 mr-2">ID:</span>
+                        <span class="bg-purple-100 text-purple-800 text-sm font-bold py-1 px-3 rounded-full">
+                            {{ $pemeriksaanFisik->id_prefisik }}
+                        </span>
+                        @if($isDokter)
+                            <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                <i class="fas fa-stethoscope mr-1"></i>Akses Dokter (Read Only)
+                            </span>
+                        @elseif($isPetugas)
+                            <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                                <i class="fas fa-user-tie mr-1"></i>Akses Petugas (CRU)
+                            </span>
+                        @elseif($isAdmin)
+                            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                <i class="fas fa-user-shield mr-1"></i>Akses Admin (Full CRUD)
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
+            <div class="flex items-center space-x-2">
+                {{-- Tombol Edit - hanya admin dan petugas --}}
+                @if($editRoute)
+                    <a href="{{ route($editRoute, $pemeriksaanFisik->id_prefisik) }}" 
+                       class="bg-orange-500 text-white hover:bg-orange-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
+                        <i class="fas fa-edit mr-2"></i> Edit{{ $isPetugas ? ' (Petugas)' : '' }}
+                    </a>
+                @endif
+                
+                <a href="{{ route($indexRoute) }}" class="bg-gray-500 text-white hover:bg-gray-600 font-medium px-4 py-2 rounded-md transition-all duration-300 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali
+                </a>
+            </div>
         </div>
         
-        <!-- Alert Messages -->
-        <div class="px-6 pt-6">
+        <!-- Content -->
+        <div class="p-6">
+            <!-- Access Level Info -->
+            @if($isDokter)
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-green-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-md font-medium text-green-800 mb-1">Akses Dokter</h3>
+                        <p class="text-sm text-green-700">
+                            Anda dapat melihat dan mencetak data pemeriksaan fisik, namun <span class="font-semibold text-red-600">tidak dapat mengedit atau menghapus</span> data. 
+                            Akses ini memberikan informasi lengkap untuk keperluan konsultasi medis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @elseif($isPetugas)
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-yellow-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-md font-medium text-yellow-800 mb-1">Akses Petugas UKS</h3>
+                        <p class="text-sm text-yellow-700">
+                            Anda dapat melihat, mengedit, dan mencetak data pemeriksaan fisik untuk keperluan pelayanan kesehatan siswa. 
+                            <span class="font-semibold text-red-600">Akses untuk menghapus data hanya tersedia untuk Administrator.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @elseif($isAdmin)
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-md font-medium text-blue-800 mb-1">Akses Administrator</h3>
+                        <p class="text-sm text-blue-700">
+                            Anda memiliki akses penuh untuk melihat, mengedit, menghapus, dan mencetak data pemeriksaan fisik. 
+                            Gunakan akses ini dengan bijak untuk menjaga integritas data sistem.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Alert Messages -->
             @if(session('success'))
             <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 flex items-center justify-between">
                 <div class="flex">
@@ -211,7 +147,7 @@ setTimeout(function() { goBack(); }, 5000);
                 </button>
             </div>
             @endif
-            
+
             @if(session('error'))
             <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 flex items-center justify-between">
                 <div class="flex">
@@ -228,629 +164,540 @@ setTimeout(function() { goBack(); }, 5000);
             </div>
             @endif
 
-            @if(session('warning'))
-            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 flex items-center justify-between">
+            <!-- Info Banner -->
+            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg mb-6">
                 <div class="flex">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                        <i class="fas fa-eye text-purple-500"></i>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-yellow-700">{!! session('warning') !!}</p>
-                    </div>
-                </div>
-                <button type="button" class="close-alert text-yellow-500 hover:text-yellow-600" onclick="this.parentElement.style.display='none'">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            @endif
-
-            @if(session('info'))
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 flex items-center justify-between">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-info-circle text-blue-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-blue-700">{{ session('info') }}</p>
-                    </div>
-                </div>
-                <button type="button" class="close-alert text-blue-500 hover:text-blue-600" onclick="this.parentElement.style.display='none'">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            @endif
-        </div>
-        
-        <!-- Detail Content -->
-        <div class="p-6">
-            <!-- Informasi Detail Pemeriksaan -->
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100 p-6 shadow-sm mb-6">
-                <div class="flex items-center mb-4">
-                    <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                        <i class="fas fa-clipboard-list text-blue-600 text-lg"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-medium text-blue-800">Informasi Detail Pemeriksaan</h3>
-                        <p class="text-sm text-blue-600">Data pemeriksaan dan identitas pasien</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white rounded-md p-4 border border-blue-200 shadow-sm">
-                        <div class="text-sm text-gray-500 mb-2">ID Detail Pemeriksaan</div>
-                        <div class="flex items-center">
-                            <i class="fas fa-file-medical text-blue-500 mr-2"></i>
-                            <span class="font-medium text-gray-800">{{ $pemeriksaanFisik->id_detprx }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-md p-4 border border-blue-200 shadow-sm">
-                        <div class="text-sm text-gray-500 mb-2">Nama Siswa</div>
-                        <div class="flex items-center">
-                            <i class="fas fa-user-graduate text-blue-500 mr-2"></i>
-                            <span class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan->siswa->nama_siswa ?? 'N/A' }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-md p-4 border border-blue-200 shadow-sm">
-                        <div class="text-sm text-gray-500 mb-2">Tanggal Pemeriksaan</div>
-                        <div class="flex items-center">
-                            <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>
-                            <span class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan ? \Carbon\Carbon::parse($pemeriksaanFisik->detailPemeriksaan->tanggal_jam)->format('d F Y - H:i') : 'N/A' }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Additional Info -->
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-white rounded-md p-4 border border-blue-200 shadow-sm">
-                        <div class="text-sm text-gray-500 mb-2">Dokter Pemeriksa</div>
-                        <div class="flex items-center">
-                            <i class="fas fa-user-md text-blue-500 mr-2"></i>
-                            <span class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan->dokter->nama_dokter ?? 'N/A' }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-md p-4 border border-blue-200 shadow-sm">
-                        <div class="text-sm text-gray-500 mb-2">Status Pemeriksaan</div>
-                        <div class="flex items-center">
-                            <i class="fas fa-clipboard-check text-blue-500 mr-2"></i>
-                            @if($pemeriksaanFisik->detailPemeriksaan)
-                                @if($pemeriksaanFisik->detailPemeriksaan->status_pemeriksaan == 'lengkap')
-                                    <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">
-                                        <i class="fas fa-check-circle mr-1"></i> Lengkap
+                    <div class="ml-3 w-full">
+                        <h3 class="text-md font-medium text-purple-800 mb-1">Informasi Pemeriksaan Fisik</h3>
+                        <p class="text-sm text-purple-700 mb-2">
+                            Menampilkan detail lengkap pemeriksaan fisik termasuk antropometri dan pemeriksaan sistem organ.
+                        </p>
+                        
+                        <!-- Metadata Info -->
+                        <div class="mt-2 p-2 bg-purple-100 border border-purple-300 rounded text-xs">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div>
+                                    <span class="font-medium text-purple-800">Dibuat:</span>
+                                    <span class="text-purple-700">{{ \Carbon\Carbon::parse($pemeriksaanFisik->created_at)->format('d/m/Y H:i') }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-purple-800">Diperbarui:</span>
+                                    <span class="text-purple-700">{{ \Carbon\Carbon::parse($pemeriksaanFisik->updated_at)->format('d/m/Y H:i') }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-purple-800">Status:</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                        <i class="fas fa-check-circle mr-1"></i>Aktif
                                     </span>
-                                @else
-                                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded-full">
-                                        <i class="fas fa-clock mr-1"></i> {{ ucfirst($pemeriksaanFisik->detailPemeriksaan->status_pemeriksaan) }}
+                                </div>
+                                <div>
+                                    <span class="font-medium text-purple-800">Akses Anda:</span>
+                                    <span class="text-purple-700">
+                                        @if($isAdmin)
+                                            Administrator (Full CRUD)
+                                        @elseif($isPetugas)
+                                            Petugas UKS (CRU)
+                                        @elseif($isDokter)
+                                            Dokter (Read Only)
+                                        @endif
                                     </span>
-                                @endif
-                            @else
-                                <span class="text-gray-400">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Informasi Utama -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Data Siswa -->
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-5 shadow-sm lg:col-span-2">
+                    <div class="flex items-center mb-4 border-b border-blue-200 pb-2">
+                        <i class="fas fa-user-graduate text-blue-500 mr-2 text-lg"></i>
+                        <h3 class="text-lg font-medium text-gray-800">Data Siswa</h3>
+                    </div>
+                    
+                    @if($pemeriksaanFisik->detailPemeriksaan && $pemeriksaanFisik->detailPemeriksaan->siswa)
+                    @php $siswa = $pemeriksaanFisik->detailPemeriksaan->siswa; @endphp
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-id-card text-blue-600 mr-2 w-4 mt-1"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">ID Siswa</p>
+                                    <p class="font-medium text-gray-800">{{ $siswa->id_siswa }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-user text-blue-600 mr-2 w-4 mt-1"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Nama Siswa</p>
+                                    <p class="font-medium text-gray-800">{{ $siswa->nama_siswa }}</p>
+                                </div>
+                            </div>
+                            @if($siswa->detailSiswa && $siswa->detailSiswa->kelas)
+                            <div class="flex items-start">
+                                <i class="fas fa-graduation-cap text-blue-600 mr-2 w-4 mt-1"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Kelas</p>
+                                    <p class="font-medium text-gray-800">{{ $siswa->detailSiswa->kelas->Nama_Kelas }}</p>
+                                </div>
+                            </div>
                             @endif
                         </div>
-                    </div>
-                </div>
-
-                <!-- Enhanced Role Access Information -->
-                <div class="mt-4 p-4 rounded-lg border {{ $isAdmin ? 'bg-blue-100 border-blue-300' : ($isPetugas ? 'bg-yellow-100 border-yellow-300' : 'bg-green-100 border-green-300') }}">
-                    <div class="flex items-center">
-                        <i class="fas fa-user-tag {{ $isAdmin ? 'text-blue-600' : ($isPetugas ? 'text-yellow-600' : 'text-green-600') }} mr-2"></i>
-                        <div class="text-sm {{ $isAdmin ? 'text-blue-800' : ($isPetugas ? 'text-yellow-800' : 'text-green-800') }}">
-                            <strong>Level Akses Anda:</strong> 
-                            @if($isAdmin)
-                                Administrator - Dapat melihat, mengedit, dan menghapus semua data pemeriksaan fisik
-                            @elseif($isPetugas)
-                                Petugas UKS - Dapat melihat dan mengedit data pemeriksaan fisik
-                            @elseif($isDokter)
-                                Dokter - Dapat melihat data pemeriksaan fisik untuk keperluan konsultasi
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Security Information -->
-                <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <div class="flex items-center">
-                        <i class="fas fa-shield-alt text-red-500 mr-2"></i>
-                        <div>
-                            <p class="text-sm text-red-700 font-medium">Informasi Keamanan</p>
-                            <p class="text-xs text-red-600 mt-1">
-                                • Orang Tua: Tidak memiliki akses sama sekali ke halaman ini
-                                • Semua aktivitas viewing tercatat dalam sistem audit
-                                • Data medis dilindungi sesuai standar privasi
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Antropometri - Data Fisik Dasar -->
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-ruler-combined text-green-500 mr-2"></i>
-                    Antropometri
-                    <span class="ml-2 text-xs text-gray-500">(Pengukuran Fisik)</span>
-                </h3>
-                
-                <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 rounded-lg p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Tinggi Badan -->
-                        <div class="bg-white rounded-md p-4 border border-green-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-arrows-alt-v text-green-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Tinggi Badan</span>
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <i class="fas fa-venus-mars text-blue-600 mr-2 w-4 mt-1"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Jenis Kelamin</p>
+                                    <p class="font-medium text-gray-800">
+                                        @if($siswa->jenis_kelamin == 'L')
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                                                <i class="fas fa-male mr-1"></i>Laki-laki
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-pink-100 text-pink-800">
+                                                <i class="fas fa-female mr-1"></i>Perempuan
+                                            </span>
+                                        @endif
+                                    </p>
                                 </div>
-                                @if($pemeriksaanFisik->tinggi_badan)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
                             </div>
-                            <div class="text-2xl font-bold text-green-600">
-                                {{ $pemeriksaanFisik->tinggi_badan ? $pemeriksaanFisik->tinggi_badan . ' cm' : '-' }}
-                            </div>
-                        </div>
-                        
-                        <!-- Berat Badan -->
-                        <div class="bg-white rounded-md p-4 border border-green-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-weight text-green-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Berat Badan</span>
-                                </div>
-                                @if($pemeriksaanFisik->berat_badan)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-2xl font-bold text-green-600">
-                                {{ $pemeriksaanFisik->berat_badan ? $pemeriksaanFisik->berat_badan . ' kg' : '-' }}
-                            </div>
-                        </div>
-                        
-                        <!-- Lingkar Kepala -->
-                        <div class="bg-white rounded-md p-4 border border-green-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-circle text-green-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Lingkar Kepala</span>
-                                </div>
-                                @if($pemeriksaanFisik->lingkar_kepala)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-2xl font-bold text-green-600">
-                                {{ $pemeriksaanFisik->lingkar_kepala ? $pemeriksaanFisik->lingkar_kepala . ' cm' : '-' }}
-                            </div>
-                        </div>
-                        
-                        <!-- Lingkar Lengan Atas -->
-                        <div class="bg-white rounded-md p-4 border border-green-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-ring text-green-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Lingkar Lengan Atas</span>
-                                </div>
-                                @if($pemeriksaanFisik->lingkar_lengan_atas)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-2xl font-bold text-green-600">
-                                {{ $pemeriksaanFisik->lingkar_lengan_atas ? $pemeriksaanFisik->lingkar_lengan_atas . ' cm' : '-' }}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Enhanced BMI Display -->
-                    @if($pemeriksaanFisik->tinggi_badan && $pemeriksaanFisik->berat_badan)
-                    @php
-                        $heightInMeters = $pemeriksaanFisik->tinggi_badan / 100;
-                        $bmi = $pemeriksaanFisik->berat_badan / ($heightInMeters * $heightInMeters);
-                        $bmi = round($bmi, 1);
-                        
-                        if ($bmi < 18.5) {
-                            $category = 'Berat Badan Kurang';
-                            $colorClass = 'text-blue-600';
-                            $bgClass = 'bg-blue-100';
-                            $borderClass = 'border-blue-200';
-                            $icon = 'fas fa-arrow-down';
-                        } elseif ($bmi < 25) {
-                            $category = 'Berat Badan Normal';
-                            $colorClass = 'text-green-600';
-                            $bgClass = 'bg-green-100';
-                            $borderClass = 'border-green-200';
-                            $icon = 'fas fa-check-circle';
-                        } elseif ($bmi < 30) {
-                            $category = 'Berat Badan Berlebih';
-                            $colorClass = 'text-yellow-600';
-                            $bgClass = 'bg-yellow-100';
-                            $borderClass = 'border-yellow-200';
-                            $icon = 'fas fa-arrow-up';
-                        } else {
-                            $category = 'Obesitas';
-                            $colorClass = 'text-red-600';
-                            $bgClass = 'bg-red-100';
-                            $borderClass = 'border-red-200';
-                            $icon = 'fas fa-exclamation-triangle';
-                        }
-                    @endphp
-                    <div class="bg-white rounded-lg border {{ $borderClass }} p-6 mt-6 shadow-sm">
-                        <div class="flex items-center">
-                            <div class="mr-6">
-                                <i class="{{ $icon }} text-3xl {{ $colorClass }}"></i>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center justify-between mb-2">
-                                    <h4 class="text-lg font-medium text-gray-700">Indeks Massa Tubuh (BMI)</h4>
-                                    <span class="text-xs {{ $colorClass }} font-medium">Perhitungan Otomatis</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <span class="text-4xl font-bold {{ $colorClass }} mr-4">{{ $bmi }}</span>
-                                        <div class="px-4 py-2 rounded-full text-sm font-medium {{ $bgClass }} {{ $colorClass }} border {{ $borderClass }}">
-                                            {{ $category }}
-                                        </div>
-                                    </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <div>Tinggi: {{ $pemeriksaanFisik->tinggi_badan }} cm</div>
-                                        <div>Berat: {{ $pemeriksaanFisik->berat_badan }} kg</div>
-                                    </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-birthday-cake text-blue-600 mr-2 w-4 mt-1"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Tanggal Lahir</p>
+                                    <p class="font-medium text-gray-800">
+                                        @if($siswa->tanggal_lahir)
+                                            {{ \Carbon\Carbon::parse($siswa->tanggal_lahir)->format('d M Y') }}
+                                            <span class="text-xs text-gray-500 block">
+                                                ({{ \Carbon\Carbon::parse($siswa->tanggal_lahir)->age }} tahun)
+                                            </span>
+                                        @else
+                                            N/A
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     @else
-                    <div class="bg-white rounded-lg border border-gray-200 p-6 mt-6 shadow-sm">
-                        <div class="flex items-center justify-center text-gray-500">
-                            <i class="fas fa-calculator text-2xl mr-3"></i>
-                            <div class="text-center">
-                                <div class="font-medium">BMI tidak dapat dihitung</div>
-                                <div class="text-sm">Data tinggi atau berat badan belum lengkap</div>
+                    <div class="text-center py-4">
+                        <p class="text-gray-500">Data siswa tidak tersedia</p>
+                    </div>
+                    @endif
+                </div>
+                
+                <!-- Data Dokter -->
+                <div class="bg-green-50 border border-green-100 rounded-lg p-5 shadow-sm">
+                    <div class="flex items-center mb-4 border-b border-green-200 pb-2">
+                        <i class="fas fa-user-md text-green-500 mr-2 text-lg"></i>
+                        <h3 class="text-lg font-medium text-gray-800">Dokter</h3>
+                    </div>
+                    
+                    @if($pemeriksaanFisik->detailPemeriksaan && $pemeriksaanFisik->detailPemeriksaan->dokter)
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-id-badge text-green-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">ID Dokter</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan->dokter->Id_Dokter }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-stethoscope text-green-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Nama Dokter</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan->dokter->Nama_Dokter }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-medal text-green-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Spesialisasi</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan->dokter->Spesialisasi ?? 'Umum' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <div class="text-center py-4">
+                        <p class="text-gray-500">Data dokter tidak tersedia</p>
+                    </div>
+                    @endif
+                </div>
+                
+                <!-- Waktu Pemeriksaan -->
+                <div class="bg-purple-50 border border-purple-100 rounded-lg p-5 shadow-sm">
+                    <div class="flex items-center mb-4 border-b border-purple-200 pb-2">
+                        <i class="fas fa-clock text-purple-500 mr-2 text-lg"></i>
+                        <h3 class="text-lg font-medium text-gray-800">Waktu</h3>
+                    </div>
+                    
+                    @if($pemeriksaanFisik->detailPemeriksaan && $pemeriksaanFisik->detailPemeriksaan->tanggal_jam)
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-calendar-alt text-purple-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Tanggal</p>
+                                <p class="font-medium text-gray-800">{{ \Carbon\Carbon::parse($pemeriksaanFisik->detailPemeriksaan->tanggal_jam)->format('d M Y') }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-clock text-purple-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Waktu</p>
+                                <p class="font-medium text-gray-800">{{ \Carbon\Carbon::parse($pemeriksaanFisik->detailPemeriksaan->tanggal_jam)->format('H:i') }} WIB</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-calendar-day text-purple-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Hari</p>
+                                <p class="font-medium text-gray-800">{{ \Carbon\Carbon::parse($pemeriksaanFisik->detailPemeriksaan->tanggal_jam)->locale('id')->translatedFormat('l') }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-history text-purple-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Relatif</p>
+                                <p class="font-medium text-gray-800 text-xs">{{ \Carbon\Carbon::parse($pemeriksaanFisik->detailPemeriksaan->tanggal_jam)->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    <div class="text-center py-4">
+                        <p class="text-gray-500">Data waktu tidak tersedia</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Petugas UKS Info (jika ada) -->
+            @if($pemeriksaanFisik->detailPemeriksaan && $pemeriksaanFisik->detailPemeriksaan->petugasUks)
+            <div class="bg-orange-50 border border-orange-100 rounded-lg p-5 shadow-sm mb-6">
+                <div class="flex items-center mb-3 border-b border-orange-200 pb-2">
+                    <i class="fas fa-user-nurse text-orange-500 mr-2 text-lg"></i>
+                    <h3 class="text-lg font-medium text-gray-800">Petugas UKS</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-id-badge text-orange-600 mr-2 w-4 mt-1"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">NIP</p>
+                            <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan->nip }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-user text-orange-600 mr-2 w-4 mt-1"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">Nama Petugas</p>
+                            <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->detailPemeriksaan->petugasUks->nama_petugas_uks }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-briefcase text-orange-600 mr-2 w-4 mt-1"></i>
+                        <div>
+                            <p class="text-xs text-gray-500">Status</p>
+                            <p class="font-medium text-gray-800">Petugas UKS Aktif</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Antropometri -->
+            <div class="mb-6">
+                <div class="flex items-center mb-4 border-b pb-2">
+                    <i class="fas fa-ruler-combined text-gray-600 mr-2 text-lg"></i>
+                    <h3 class="text-xl font-semibold text-gray-800">Antropometri</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <!-- Tinggi Badan -->
+                    <div class="bg-green-50 border border-green-100 rounded-lg p-5 shadow-sm text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <i class="fas fa-arrows-alt-v text-green-500 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Tinggi Badan</h4>
+                        <p class="text-2xl font-bold text-green-600">
+                            {{ $pemeriksaanFisik->tinggi_badan ? $pemeriksaanFisik->tinggi_badan . ' cm' : '-' }}
+                        </p>
+                    </div>
+
+                    <!-- Berat Badan -->
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-5 shadow-sm text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <i class="fas fa-weight text-blue-500 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Berat Badan</h4>
+                        <p class="text-2xl font-bold text-blue-600">
+                            {{ $pemeriksaanFisik->berat_badan ? $pemeriksaanFisik->berat_badan . ' kg' : '-' }}
+                        </p>
+                    </div>
+
+                    <!-- Lingkar Kepala -->
+                    <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-5 shadow-sm text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <i class="fas fa-circle text-yellow-500 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Lingkar Kepala</h4>
+                        <p class="text-2xl font-bold text-yellow-600">
+                            {{ $pemeriksaanFisik->lingkar_kepala ? $pemeriksaanFisik->lingkar_kepala . ' cm' : '-' }}
+                        </p>
+                    </div>
+
+                    <!-- Lingkar Lengan Atas -->
+                    <div class="bg-purple-50 border border-purple-100 rounded-lg p-5 shadow-sm text-center">
+                        <div class="flex items-center justify-center mb-3">
+                            <i class="fas fa-ring text-purple-500 text-2xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Lingkar Lengan Atas</h4>
+                        <p class="text-2xl font-bold text-purple-600">
+                            {{ $pemeriksaanFisik->lingkar_lengan_atas ? $pemeriksaanFisik->lingkar_lengan_atas . ' cm' : '-' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- BMI Calculation -->
+                @if($pemeriksaanFisik->tinggi_badan && $pemeriksaanFisik->berat_badan)
+                @php
+                    $heightInMeters = $pemeriksaanFisik->tinggi_badan / 100;
+                    $bmi = $pemeriksaanFisik->berat_badan / ($heightInMeters * $heightInMeters);
+                    $bmi = round($bmi, 1);
+                    
+                    if ($bmi < 18.5) {
+                        $category = 'Berat Badan Kurang';
+                        $colorClass = 'text-blue-600';
+                        $bgClass = 'bg-blue-100';
+                        $borderClass = 'border-blue-200';
+                    } elseif ($bmi < 25) {
+                        $category = 'Berat Badan Normal';
+                        $colorClass = 'text-green-600';
+                        $bgClass = 'bg-green-100';
+                        $borderClass = 'border-green-200';
+                    } elseif ($bmi < 30) {
+                        $category = 'Berat Badan Berlebih';
+                        $colorClass = 'text-yellow-600';
+                        $bgClass = 'bg-yellow-100';
+                        $borderClass = 'border-yellow-200';
+                    } else {
+                        $category = 'Obesitas';
+                        $colorClass = 'text-red-600';
+                        $bgClass = 'bg-red-100';
+                        $borderClass = 'border-red-200';
+                    }
+                @endphp
+                <div class="bg-gray-50 border border-gray-100 rounded-lg p-5 shadow-sm">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-calculator text-gray-500 mr-2"></i>
+                        <h4 class="font-semibold text-gray-800">Indeks Massa Tubuh (BMI)</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-md border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="text-3xl font-bold {{ $colorClass }} mr-4">{{ $bmi }}</span>
+                                <div class="px-3 py-1 rounded-full text-sm font-medium {{ $bgClass }} {{ $colorClass }} border {{ $borderClass }}">
+                                    {{ $category }}
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-500 text-right">
+                                <div>Tinggi: {{ $pemeriksaanFisik->tinggi_badan }} cm</div>
+                                <div>Berat: {{ $pemeriksaanFisik->berat_badan }} kg</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+
+            <!-- Pemeriksaan Sistem Organ -->
+            <div class="mb-6">
+                <div class="flex items-center mb-4 border-b pb-2">
+                    <i class="fas fa-heartbeat text-gray-600 mr-2 text-lg"></i>
+                    <h3 class="text-xl font-semibold text-gray-800">Pemeriksaan Sistem Organ</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Kepala -->
+                    <div class="bg-red-50 border border-red-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-head-side-virus text-red-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Kepala</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->kepala ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dada -->
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-lungs text-blue-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Dada</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->dada ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jantung -->
+                    <div class="bg-pink-50 border border-pink-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-heart text-pink-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Jantung</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->jantung ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paru -->
+                    <div class="bg-green-50 border border-green-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-lungs-virus text-green-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Paru</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->paru ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Perut -->
+                    <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-hand-paper text-yellow-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Perut</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->perut ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hepar -->
+                    <div class="bg-purple-50 border border-purple-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-prescription-bottle text-purple-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Hepar</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->hepar ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anogenital -->
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-user-check text-indigo-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Anogenital</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->anogenital ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ekstremitas -->
+                    <div class="bg-teal-50 border border-teal-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-walking text-teal-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Ekstremitas</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->ekstremitas ?: 'Tidak diperiksa' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pemeriksaan Penunjang & Rencana -->
+            <div class="mb-6">
+                <div class="flex items-center mb-4 border-b pb-2">
+                    <i class="fas fa-clipboard-check text-gray-600 mr-2 text-lg"></i>
+                    <h3 class="text-xl font-semibold text-gray-800">Pemeriksaan Penunjang & Rencana</h3>
+                </div>
+                
+                <!-- Pemeriksaan Penunjang -->
+                @if($pemeriksaanFisik->pemeriksaan_penunjang)
+                <div class="bg-purple-50 border border-purple-100 rounded-lg p-5 shadow-sm mb-4">
+                    <div class="flex items-center mb-3">
+                        <i class="fas fa-microscope text-purple-500 mr-2"></i>
+                        <h4 class="font-semibold text-purple-800">Pemeriksaan Penunjang</h4>
+                    </div>
+                    <div class="bg-white p-4 rounded-md border border-purple-200">
+                        <p class="text-gray-700 whitespace-pre-line leading-relaxed">{{ $pemeriksaanFisik->pemeriksaan_penunjang }}</p>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Grid Masalah & Rencana -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @if($pemeriksaanFisik->masalah_aktif)
+                    <div class="bg-orange-50 border border-orange-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-orange-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Masalah Aktif</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->masalah_aktif }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($pemeriksaanFisik->rencana_medis_dan_terapi)
+                    <div class="bg-teal-50 border border-teal-100 rounded-lg p-4 shadow-sm">
+                        <div class="flex items-start">
+                            <i class="fas fa-pills text-teal-600 mr-2 w-4 mt-1"></i>
+                            <div>
+                                <p class="text-xs text-gray-500">Rencana Medis dan Terapi</p>
+                                <p class="font-medium text-gray-800">{{ $pemeriksaanFisik->rencana_medis_dan_terapi }}</p>
                             </div>
                         </div>
                     </div>
                     @endif
                 </div>
-            </div>
-            
-            <!-- Pemeriksaan Sistem Organ -->
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-heartbeat text-red-500 mr-2"></i>
-                    Pemeriksaan Sistem Organ
-                    <span class="ml-2 text-xs text-gray-500">(Hasil Pemeriksaan)</span>
-                </h3>
-                
-                <div class="bg-gradient-to-br from-red-50 to-pink-50 border border-red-100 rounded-lg p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Kepala -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-head-side-virus text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Kepala</span>
-                                </div>
-                                @if($pemeriksaanFisik->kepala)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->kepala ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->kepala ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Dada -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-lungs text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Dada</span>
-                                </div>
-                                @if($pemeriksaanFisik->dada)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->dada ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->dada ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Jantung -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-heart text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Jantung</span>
-                                </div>
-                                @if($pemeriksaanFisik->jantung)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->jantung ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->jantung ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Paru -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-lungs-virus text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Paru</span>
-                                </div>
-                                @if($pemeriksaanFisik->paru)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->paru ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->paru ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Perut -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-hand-paper text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Perut</span>
-                                </div>
-                                @if($pemeriksaanFisik->perut)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->perut ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->perut ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Hepar -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-prescription-bottle text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Hepar</span>
-                                </div>
-                                @if($pemeriksaanFisik->hepar)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->hepar ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->hepar ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Anogenital -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-user-check text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Anogenital</span>
-                                </div>
-                                @if($pemeriksaanFisik->anogenital)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->anogenital ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->anogenital ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Ekstremitas -->
-                        <div class="bg-white rounded-md p-4 border border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-walking text-red-500 mr-2"></i>
-                                    <span class="text-sm font-medium text-gray-700">Ekstremitas</span>
-                                </div>
-                                @if($pemeriksaanFisik->ekstremitas)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="text-gray-800 min-h-[2rem] flex items-center">
-                                <span class="{{ $pemeriksaanFisik->ekstremitas ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->ekstremitas ?: 'Tidak diperiksa' }}
-                                </span>
-                            </div>
-                        </div>
+
+                @if(!$pemeriksaanFisik->pemeriksaan_penunjang && !$pemeriksaanFisik->masalah_aktif && !$pemeriksaanFisik->rencana_medis_dan_terapi)
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 mb-4">
+                        <i class="fas fa-clipboard-check text-gray-400 text-xl"></i>
                     </div>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">Belum Ada Data Penunjang</h3>
+                    <p class="text-gray-500">Belum ada data pemeriksaan penunjang, masalah aktif, atau rencana terapi</p>
                 </div>
-            </div>
-            
-            <!-- Pemeriksaan Penunjang & Rencana -->
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-clipboard-check text-purple-500 mr-2"></i>
-                    Pemeriksaan Penunjang & Rencana
-                    <span class="ml-2 text-xs text-gray-500">(Diagnosis & Terapi)</span>
-                </h3>
-                
-                <div class="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-lg p-6">
-                    <div class="grid grid-cols-1 gap-6">
-                        <!-- Pemeriksaan Penunjang -->
-                        <div class="bg-white rounded-lg p-5 border border-purple-200 shadow-sm">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center">
-                                    <i class="fas fa-microscope text-purple-500 mr-2"></i>
-                                    <h4 class="text-md font-medium text-purple-700">Pemeriksaan Penunjang</h4>
-                                </div>
-                                @if($pemeriksaanFisik->pemeriksaan_penunjang)
-                                    <i class="fas fa-check-circle text-green-500"></i>
-                                @else
-                                    <i class="fas fa-minus-circle text-gray-400"></i>
-                                @endif
-                            </div>
-                            <div class="p-4 bg-purple-50 rounded-md min-h-[100px] border border-purple-100">
-                                <p class="text-gray-800 whitespace-pre-wrap {{ $pemeriksaanFisik->pemeriksaan_penunjang ? 'font-medium' : 'italic text-gray-500' }}">
-                                    {{ $pemeriksaanFisik->pemeriksaan_penunjang ?: 'Tidak ada pemeriksaan penunjang yang diperlukan' }}
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Masalah Aktif -->
-                            <div class="bg-white rounded-lg p-5 border border-purple-200 shadow-sm">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-exclamation-triangle text-purple-500 mr-2"></i>
-                                        <h4 class="text-md font-medium text-purple-700">Masalah Aktif</h4>
-                                    </div>
-                                    @if($pemeriksaanFisik->masalah_aktif)
-                                        <i class="fas fa-check-circle text-green-500"></i>
-                                    @else
-                                        <i class="fas fa-minus-circle text-gray-400"></i>
-                                    @endif
-                                </div>
-                                <div class="p-3 bg-purple-50 rounded-md min-h-[80px] border border-purple-100">
-                                    <p class="text-gray-800 {{ $pemeriksaanFisik->masalah_aktif ? 'font-medium' : 'italic text-gray-500' }}">
-                                        {{ $pemeriksaanFisik->masalah_aktif ?: 'Tidak ada masalah aktif' }}
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <!-- Rencana Medis dan Terapi -->
-                            <div class="bg-white rounded-lg p-5 border border-purple-200 shadow-sm">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-pills text-purple-500 mr-2"></i>
-                                        <h4 class="text-md font-medium text-purple-700">Rencana Medis dan Terapi</h4>
-                                    </div>
-                                    @if($pemeriksaanFisik->rencana_medis_dan_terapi)
-                                        <i class="fas fa-check-circle text-green-500"></i>
-                                    @else
-                                        <i class="fas fa-minus-circle text-gray-400"></i>
-                                    @endif
-                                </div>
-                                <div class="p-3 bg-purple-50 rounded-md min-h-[80px] border border-purple-100">
-                                    <p class="text-gray-800 {{ $pemeriksaanFisik->rencana_medis_dan_terapi ? 'font-medium' : 'italic text-gray-500' }}">
-                                        {{ $pemeriksaanFisik->rencana_medis_dan_terapi ?: 'Belum ada rencana terapi' }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Metadata Information -->
-            <div class="mb-8">
-                <h3 class="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-info-circle text-gray-500 mr-2"></i>
-                    Informasi Metadata
-                    <span class="ml-2 text-xs text-gray-500">(Data Sistem)</span>
-                </h3>
-                
-                <div class="bg-gray-50 border border-gray-100 rounded-lg p-5">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white rounded-md p-4 border border-gray-200 shadow-sm">
-                            <div class="text-sm text-gray-500 mb-2">Dibuat Tanggal</div>
-                            <div class="flex items-center">
-                                <i class="fas fa-calendar-plus text-blue-500 mr-2"></i>
-                                <span class="font-medium text-gray-800">{{ $pemeriksaanFisik->created_at->format('d F Y H:i') }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-md p-4 border border-gray-200 shadow-sm">
-                            <div class="text-sm text-gray-500 mb-2">Terakhir Diupdate</div>
-                            <div class="flex items-center">
-                                <i class="fas fa-calendar-check text-green-500 mr-2"></i>
-                                <span class="font-medium text-gray-800">{{ $pemeriksaanFisik->updated_at->format('d F Y H:i') }}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-md p-4 border border-gray-200 shadow-sm">
-                            <div class="text-sm text-gray-500 mb-2">Selisih Waktu</div>
-                            <div class="flex items-center">
-                                <i class="fas fa-clock text-purple-500 mr-2"></i>
-                                <span class="font-medium text-gray-800">{{ $pemeriksaanFisik->updated_at->diffForHumans() }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row justify-center gap-3 pt-6 border-t border-gray-200">
-                <a href="{{ route($indexRoute) }}" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-md text-center flex items-center justify-center transition-colors">
-                    <i class="fas fa-list mr-2"></i>
-                    Lihat Semua Pemeriksaan
-                </a>
-                
-                @if($isAdmin || $isPetugas)
-                <a href="{{ route($editRoute, $pemeriksaanFisik->id_prefisik) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-3 px-6 rounded-md text-center flex items-center justify-center transition-colors">
-                    <i class="fas fa-edit mr-2"></i>
-                    Edit Pemeriksaan
-                </a>
-                @endif
-                
-                @if($isAdmin)
-                <form action="{{ route($destroyRoute, $pemeriksaanFisik->id_prefisik) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pemeriksaan fisik ini?\n\nID: {{ $pemeriksaanFisik->id_prefisik }}\n\nTindakan ini akan menghapus semua data terkait dan tidak dapat dikembalikan!');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-3 px-6 rounded-md flex items-center justify-center transition-colors">
-                        <i class="fas fa-trash mr-2"></i>
-                        Hapus Pemeriksaan
-                    </button>
-                </form>
                 @endif
             </div>
 
-            <!-- Enhanced Role Information Footer -->
-            <div class="mt-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border-2 border-gray-200">
-                <div class="flex items-center text-sm text-gray-700">
-                    <div class="flex items-center mr-4">
-                        <i class="fas fa-shield-alt text-red-500 mr-2"></i>
-                        <span class="font-bold text-red-600">KEAMANAN AKSES:</span>
-                    </div>
-                    <div class="flex-1">
-                        @if($isDokter)
-                            <span><strong>Akses Dokter:</strong> Anda dapat melihat semua detail pemeriksaan fisik untuk keperluan konsultasi dan diagnosis.</span>
-                        @elseif($isPetugas)
-                            <span><strong>Akses Petugas:</strong> Anda dapat melihat dan mengedit data pemeriksaan fisik, namun tidak dapat menghapus data yang sudah tersimpan.</span>
-                        @elseif($isAdmin)
-                            <span><strong>Akses Administrator:</strong> Anda memiliki kontrol penuh untuk mengelola data pemeriksaan fisik termasuk mengedit dan menghapus data.</span>
-                        @endif
-                    </div>
-                </div>
-                <div class="mt-2 text-xs text-red-600 font-medium">
-                    <i class="fas fa-ban mr-1"></i>
-                    ORANG TUA: TIDAK MEMILIKI AKSES KE HALAMAN INI
+            <!-- Action Buttons -->
+            <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                <a href="{{ route($indexRoute) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    <i class="fas fa-arrow-left mr-2 text-gray-500"></i>
+                    Kembali ke Daftar
+                </a>
+                
+                <div class="flex space-x-2">
+                    {{-- Tombol Edit - hanya admin dan petugas --}}
+                    @if($editRoute)
+                        <a href="{{ route($editRoute, $pemeriksaanFisik->id_prefisik) }}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Pemeriksaan
+                        </a>
+                    @endif
+                    
+                    {{-- Tombol Hapus - hanya admin --}}
+                    @if($destroyRoute)
+                        <form action="{{ route($destroyRoute, $pemeriksaanFisik->id_prefisik) }}" method="POST" class="inline-block" id="deleteForm">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" onclick="confirmDelete()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <i class="fas fa-trash mr-2"></i>
+                                Hapus Data
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>
@@ -860,14 +707,6 @@ setTimeout(function() { goBack(); }, 5000);
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Enhanced security check
-    const userLevel = '{{ $userLevel }}';
-    if (userLevel === 'orang_tua') {
-        alert('Akses ditolak! Anda tidak memiliki izin untuk mengakses halaman ini.');
-        window.location.href = '{{ route("dashboard") }}';
-        return;
-    }
-    
     // Auto-close alerts after 5 seconds
     const alerts = document.querySelectorAll('.close-alert');
     alerts.forEach(function(alert) {
@@ -877,48 +716,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 5000);
     });
-
-    // Add hover effects to cards
-    const cards = document.querySelectorAll('.hover\\:shadow-md');
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.classList.add('transform', 'scale-105');
-            this.style.transition = 'all 0.2s ease-in-out';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.classList.remove('transform', 'scale-105');
-        });
-    });
-
-    // Add visual feedback for buttons
-    const buttons = document.querySelectorAll('a, button');
-    buttons.forEach(button => {
-        button.addEventListener('mousedown', function() {
-            this.classList.add('transform', 'scale-95');
-        });
-        
-        button.addEventListener('mouseup', function() {
-            this.classList.remove('transform', 'scale-95');
-        });
-        
-        button.addEventListener('mouseleave', function() {
-            this.classList.remove('transform', 'scale-95');
-        });
-    });
-
-    // Add role-based visual accents
-    if (userLevel === 'dokter') {
-        document.querySelector('.bg-gradient-to-r').classList.add('border-b-4', 'border-green-500');
-    } else if (userLevel === 'petugas') {
-        document.querySelector('.bg-gradient-to-r').classList.add('border-b-4', 'border-yellow-500');
-    } else if (userLevel === 'admin') {
-        document.querySelector('.bg-gradient-to-r').classList.add('border-b-4', 'border-blue-500');
-    }
     
-    // Security logging
-    console.log('Akses halaman detail pemeriksaan fisik oleh: ' + userLevel);
+    // Log user level for debugging
+    console.log('User Level:', '{{ $userLevel }}');
+    console.log('View Access:', '{{ $isAdmin ? "Admin (Full)" : ($isPetugas ? "Petugas (CRU)" : ($isDokter ? "Dokter (Read Only)" : "Unknown")) }}');
+    console.log('Record ID:', '{{ $pemeriksaanFisik->id_prefisik }}');
 });
+
+@if($isAdmin)
+function confirmDelete() {
+    const pemeriksaanId = '{{ $pemeriksaanFisik->id_prefisik }}';
+    const siswaName = '{{ $pemeriksaanFisik->detailPemeriksaan->siswa->nama_siswa ?? "Tidak Diketahui" }}';
+    
+    if (confirm(`PERINGATAN!\n\nApakah Anda yakin ingin menghapus data pemeriksaan fisik ini?\n\nID: ${pemeriksaanId}\nSiswa: ${siswaName}\n\nTindakan ini akan menghapus:\n- Data pemeriksaan fisik lengkap\n- Semua data antropometri\n- Data pemeriksaan sistem organ\n\nData yang dihapus TIDAK DAPAT dikembalikan!\n\nKlik OK untuk melanjutkan atau Cancel untuk membatalkan.`)) {
+        document.getElementById('deleteForm').submit();
+    }
+}
+@endif
 </script>
 @endpush
 @endsection

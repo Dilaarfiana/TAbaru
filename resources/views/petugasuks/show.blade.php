@@ -1,246 +1,317 @@
 @extends('layouts.app')
 
+@section('title', 'Detail Petugas UKS')
+
 @section('content')
-    <div class="max-w-6xl mx-auto"> <!-- Lebih lebar dari sebelumnya -->
-        <!-- Back and Action Buttons -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center space-x-3">
-                <a href="{{ route('petugasuks.index') }}" class="p-2 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-arrow-left text-gray-500"></i>
-                </a>
-                <h1 class="text-2xl font-semibold text-gray-800">Detail Petugas UKS</h1>
-            </div>
-            <div class="flex space-x-2">
-                <form action="{{ route('petugasuks.destroy', $petugasUKS->NIP) }}" method="POST" onsubmit="return confirm('Apakah anda yakin ingin menghapus petugas ini?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200">
-                        <i class="fas fa-trash-alt mr-2"></i>
-                        Hapus
-                    </button>
-                </form>
-                <a href="{{ route('petugasuks.edit', $petugasUKS->NIP) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-200">
-                    <i class="fas fa-edit mr-2"></i>
-                    Edit
-                </a>
+<div class="p-4 bg-gray-50 min-h-screen">
+    <!-- Main Card -->
+    <div class="max-w-6xl mx-auto">
+        <!-- Top Card - White header -->
+        <div class="bg-white rounded-t-lg p-6 shadow-md border-b-4 border-blue-500">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div class="flex items-center">
+                    <div class="bg-blue-500 p-4 rounded-full shadow-lg mr-4">
+                        <i class="fas fa-user-nurse text-white text-3xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">{{ $petugasUKS->nama_petugas_uks }}</h1>
+                        <div class="flex flex-wrap items-center mt-2 gap-2">
+                            @if($petugasUKS->level == 'admin')
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                    <i class="fas fa-user-shield mr-1"></i>
+                                    Administrator
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-user-tie mr-1"></i>
+                                    Petugas
+                                </span>
+                            @endif
+                            
+                            <!-- Status Badge -->
+                            @if($petugasUKS->status_aktif == 1)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Aktif
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    Tidak Aktif
+                                </span>
+                            @endif
+                            
+                            <span class="text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded">
+                                <i class="fas fa-id-card mr-1"></i>
+                                NIP: {{ $petugasUKS->NIP }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('petugasuks.edit', $petugasUKS->NIP) }}" 
+                       class="px-4 py-2 bg-yellow-500 text-white rounded-md shadow hover:bg-yellow-600 transition duration-150 flex items-center">
+                        <i class="fas fa-edit mr-2"></i> Edit
+                    </a>
+                    
+                    <form action="{{ route('petugasuks.destroy', $petugasUKS->NIP) }}" method="POST" class="inline-block">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" 
+                                class="px-4 py-2 bg-red-600 text-white rounded-md shadow hover:bg-red-700 transition duration-150 flex items-center"
+                                onclick="return confirmDelete()">
+                            <i class="fas fa-trash mr-2"></i> Hapus
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <!-- Profile Card -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-            <!-- Header with profile info -->
-            <div class="relative">
-                <!-- Background Pattern dengan gradien yang lebih menarik -->
-                <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600"></div>
-                <div class="absolute inset-0 bg-pattern opacity-10" style="background-image: url('data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 40L40 0H20L0 20M40 40V20L20 40\'/%3E%3C/g%3E%3C/svg%3E');"></div>
-                
-                <!-- Profile Content -->
-                <div class="relative pt-12 pb-24 px-8 text-center">
-                    <div class="inline-flex items-center justify-center h-28 w-28 rounded-full bg-white bg-opacity-90 shadow-xl mb-5 border-4 border-white">
-                        <span class="text-blue-600 text-5xl">
-                            <i class="fas fa-user-nurse"></i>
-                        </span>
-                    </div>
-                    <h2 class="text-3xl font-bold text-white mb-2">
-                        {{ $petugasUKS->nama_petugas_uks }}
-                    </h2>
-                    <div class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-blue-800 bg-opacity-60 text-white mb-4 shadow-sm">
-                        <i class="fas fa-id-badge mr-2"></i>
-                        {{ $petugasUKS->NIP }}
-                    </div>
-                    
-                    <!-- Quick Info Pills -->
-                    <div class="flex justify-center mt-5 space-x-4">
-                        @if($petugasUKS->no_telp)
-                        <div class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-white bg-opacity-25 text-white shadow-sm backdrop-blur-sm">
-                            <i class="fas fa-phone-alt mr-2"></i>
-                            {{ $petugasUKS->no_telp }}
-                        </div>
-                        @endif
-                        <div class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium {{ $petugasUKS->status_aktif ? 'bg-green-500' : 'bg-red-500' }} text-white shadow-sm">
-                            <i class="fas {{ $petugasUKS->status_aktif ? 'fa-check-circle' : 'fa-times-circle' }} mr-2"></i>
-                            {{ $petugasUKS->status_aktif ? 'Aktif' : 'Tidak Aktif' }}
-                        </div>
-                        <div class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium {{ $petugasUKS->level == 'admin' ? 'bg-purple-500' : 'bg-blue-500' }} text-white shadow-sm">
-                            <i class="fas {{ $petugasUKS->level == 'admin' ? 'fa-user-shield' : 'fa-user-nurse' }} mr-2"></i>
-                            {{ $petugasUKS->level == 'admin' ? 'Admin' : 'Petugas' }}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Card Tabs -->
-                <div class="absolute bottom-0 left-0 right-0">
-                    <div class="flex justify-center">
-                        <div class="inline-flex rounded-t-lg overflow-hidden shadow-md">
-                            <a href="#" class="px-5 py-3 bg-white text-blue-600 font-medium text-sm flex items-center">
-                                <i class="fas fa-info-circle mr-2"></i>
-                                Informasi Dasar
-                            </a>
-                            <a href="#" class="px-5 py-3 bg-white bg-opacity-15 text-white hover:bg-opacity-25 transition-colors font-medium text-sm flex items-center">
-                                <i class="fas fa-history mr-2"></i>
-                                Riwayat Aktivitas
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Profile Detail -->
-            <div class="p-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Personal Information -->
-                    <div class="bg-gray-50 rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <h3 class="text-lg font-medium text-gray-900 mb-5 flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                                <i class="fas fa-user-circle text-blue-600"></i>
-                            </div>
-                            Informasi Pribadi
-                        </h3>
-                        
-                        <div class="space-y-5">
-                            <div>
-                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Nama Lengkap</h4>
-                                <p class="text-gray-900 font-medium text-lg">{{ $petugasUKS->nama_petugas_uks }}</p>
+        <!-- Detail Content -->
+        <div class="bg-white rounded-b-lg shadow-md p-6">
+            <!-- Information Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column - Main Information -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Basic Details Card -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-5 flex items-center">
+                            <i class="fas fa-user mr-3 text-blue-500"></i>
+                            Informasi Dasar
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-id-card text-blue-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">NIP</h3>
+                                </div>
+                                <p class="text-lg font-semibold text-gray-900">{{ $petugasUKS->NIP }}</p>
                             </div>
                             
-                            <div>
-                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">NIP</h4>
-                                <p class="text-gray-900 font-medium">{{ $petugasUKS->NIP }}</p>
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-user text-blue-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Nama Petugas</h3>
+                                </div>
+                                <p class="text-lg font-semibold text-gray-900">{{ $petugasUKS->nama_petugas_uks }}</p>
                             </div>
                             
-                            <div>
-                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Alamat</h4>
-                                <p class="text-gray-900">{{ $petugasUKS->alamat ?? 'Tidak ada data' }}</p>
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-shield-alt text-blue-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Level Akses</h3>
+                                </div>
+                                <div class="flex items-center">
+                                    @if($petugasUKS->level == 'admin')
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                            <i class="fas fa-user-shield mr-1"></i>
+                                            Administrator
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                            <i class="fas fa-user-tie mr-1"></i>
+                                            Petugas
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-toggle-{{ $petugasUKS->status_aktif ? 'on text-green-500' : 'off text-red-500' }} mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Status Aktif</h3>
+                                </div>
+                                <div class="flex items-center">
+                                    @if($petugasUKS->status_aktif == 1)
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Aktif
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Tidak Aktif
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Contact & System Information -->
-                    <div class="bg-gray-50 rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <h3 class="text-lg font-medium text-gray-900 mb-5 flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                                <i class="fas fa-address-card text-blue-600"></i>
-                            </div>
-                            Kontak & Sistem
-                        </h3>
-                        
-                        <div class="space-y-5">
-                            <div>
-                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">No. Telepon</h4>
+
+                    <!-- Contact Information Card -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-100">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-5 flex items-center">
+                            <i class="fas fa-address-book mr-3 text-green-500"></i>
+                            Informasi Kontak & Alamat
+                        </h2>
+                        <div class="space-y-4">
+                            <!-- Phone Number -->
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-phone text-green-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">No. Telepon</h3>
+                                </div>
                                 @if($petugasUKS->no_telp)
-                                    <p class="text-gray-900 flex items-center">
-                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-green-100 mr-2">
-                                            <i class="fas fa-phone-alt text-green-600"></i>
-                                        </span>
-                                        {{ $petugasUKS->no_telp }}
-                                    </p>
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-lg font-semibold text-gray-900">{{ $petugasUKS->no_telp }}</p>
+                                        <a href="tel:{{ $petugasUKS->no_telp }}" 
+                                           class="inline-flex items-center px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 transition-colors">
+                                            <i class="fas fa-phone mr-1"></i>
+                                            Telepon
+                                        </a>
+                                    </div>
                                 @else
-                                    <p class="text-gray-500 italic flex items-center">
-                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 mr-2">
-                                            <i class="fas fa-phone-slash text-gray-400"></i>
-                                        </span>
-                                        Tidak ada data
+                                    <p class="text-lg text-gray-400 italic">Belum diisi</p>
+                                @endif
+                            </div>
+                            
+                            <!-- Address -->
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Alamat</h3>
+                                </div>
+                                @if($petugasUKS->alamat)
+                                    <p class="text-gray-900 leading-relaxed">{{ $petugasUKS->alamat }}</p>
+                                @else
+                                    <p class="text-gray-400 italic">Alamat belum diisi</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Metadata & Actions -->
+                <div class="space-y-6">
+                    <!-- System Information -->
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-5 flex items-center">
+                            <i class="fas fa-cog mr-3 text-purple-500"></i>
+                            Informasi Sistem
+                        </h2>
+                        <div class="space-y-4">
+                            <!-- Created At -->
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-calendar-plus text-purple-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Dibuat Pada</h3>
+                                </div>
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ $petugasUKS->created_at ? $petugasUKS->created_at->setTimezone('Asia/Jakarta')->format('d F Y, H:i:s') : '-' }}
+                                </p>
+                                @if($petugasUKS->created_at)
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ $petugasUKS->created_at->diffForHumans() }}
                                     </p>
                                 @endif
                             </div>
-
-                            <div>
-                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Level Akses</h4>
-                                <p class="text-gray-900 flex items-center">
-                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full {{ $petugasUKS->level == 'admin' ? 'bg-purple-100' : 'bg-blue-100' }} mr-2">
-                                        <i class="fas {{ $petugasUKS->level == 'admin' ? 'fa-user-shield text-purple-600' : 'fa-user-nurse text-blue-600' }}"></i>
-                                    </span>
-                                    {{ $petugasUKS->level == 'admin' ? 'Admin' : 'Petugas' }}
+                            
+                            <!-- Updated At -->
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-calendar-check text-purple-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Terakhir Diperbarui</h3>
+                                </div>
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ $petugasUKS->updated_at ? $petugasUKS->updated_at->setTimezone('Asia/Jakarta')->format('d F Y, H:i:s') : '-' }}
                                 </p>
+                                @if($petugasUKS->updated_at)
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ $petugasUKS->updated_at->diffForHumans() }}
+                                    </p>
+                                @endif
                             </div>
                             
-                            <div>
-                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Tanggal Dibuat</h4>
-                                <p class="text-gray-900 flex items-center">
-                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 mr-2">
-                                        <i class="fas fa-calendar-plus text-blue-600"></i>
-                                    </span>
-                                    {{ $petugasUKS->created_at->format('d M Y, H:i') }}
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Terakhir Diperbarui</h4>
-                                <p class="text-gray-900 flex items-center">
-                                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-100 mr-2">
-                                        <i class="fas fa-sync text-amber-600"></i>
-                                    </span>
-                                    {{ $petugasUKS->updated_at->format('d M Y, H:i') }}
-                                </p>
+                            <!-- Record ID -->
+                            <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-fingerprint text-purple-500 mr-2"></i>
+                                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">ID Record</h3>
+                                </div>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-database mr-1"></i>
+                                    {{ $petugasUKS->NIP }}
+                                </span>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Additional Information -->
-                <div class="mt-8 bg-white rounded-lg p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                    <h3 class="text-lg font-medium text-gray-900 mb-5 flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                            <i class="fas fa-clipboard-list text-blue-600"></i>
-                        </div>
-                        Status & Aktivitas
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Status</p>
-                                    <p class="mt-2 text-xl font-semibold {{ $petugasUKS->status_aktif ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ $petugasUKS->status_aktif ? 'Aktif' : 'Tidak Aktif' }}
-                                    </p>
-                                </div>
-                                <div class="{{ $petugasUKS->status_aktif ? 'bg-green-100' : 'bg-red-100' }} p-3 rounded-full">
-                                    <i class="fas {{ $petugasUKS->status_aktif ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }} text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Level</p>
-                                    <p class="mt-2 text-xl font-semibold {{ $petugasUKS->level == 'admin' ? 'text-purple-600' : 'text-blue-600' }}">
-                                        {{ $petugasUKS->level == 'admin' ? 'Admin' : 'Petugas' }}
-                                    </p>
-                                </div>
-                                <div class="{{ $petugasUKS->level == 'admin' ? 'bg-purple-100' : 'bg-blue-100' }} p-3 rounded-full">
-                                    <i class="fas {{ $petugasUKS->level == 'admin' ? 'fa-user-shield text-purple-500' : 'fa-user-nurse text-blue-500' }} text-xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Login Terakhir</p>
-                                    <p class="mt-2 text-sm font-semibold text-gray-600">-</p>
-                                </div>
-                                <div class="bg-gray-100 p-3 rounded-full">
-                                    <i class="fas fa-user-clock text-gray-500 text-xl"></i>
-                                </div>
-                            </div>
+
+                    <!-- Navigation Actions -->
+                    <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-compass mr-2 text-gray-500"></i>
+                            Navigasi
+                        </h2>
+                        <div class="space-y-3">
+                            <a href="{{ route('petugasuks.index') }}" 
+                               class="flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-gray-700 transition duration-150 w-full">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Kembali ke Daftar Petugas
+                            </a>
+                            
+                            <a href="{{ route('petugasuks.edit', $petugasUKS->NIP) }}" 
+                               class="flex items-center justify-center px-4 py-3 bg-yellow-500 text-white rounded-md shadow-sm text-sm font-medium hover:bg-yellow-600 transition duration-150 w-full">
+                                <i class="fas fa-edit mr-2"></i>
+                                Edit Data Petugas
+                            </a>
+                            
+                            <a href="{{ route('petugasuks.create') }}" 
+                               class="flex items-center justify-center px-4 py-3 bg-blue-500 text-white rounded-md shadow-sm text-sm font-medium hover:bg-blue-600 transition duration-150 w-full">
+                                <i class="fas fa-plus mr-2"></i>
+                                Tambah Petugas Baru
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Action Buttons -->
-        <div class="flex justify-center mt-8 mb-6 space-x-4">
-            <a href="{{ route('petugasuks.index') }}" class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                <i class="fas fa-list mr-2"></i>
-                Kembali ke Daftar
-            </a>
-            <a href="{{ route('petugasuks.edit', $petugasUKS->NIP) }}" class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                <i class="fas fa-edit mr-2"></i>
-                Edit Data
-            </a>
-        </div>
     </div>
+</div>
+
+@push('scripts')
+<script>
+function confirmDelete() {
+    const petugasNIP = '{{ $petugasUKS->NIP }}';
+    const petugasName = '{{ $petugasUKS->nama_petugas_uks }}';
+    
+    return confirm(`Apakah Anda yakin ingin menghapus data petugas UKS ini?\n\nNIP: ${petugasNIP}\nNama: ${petugasName}\n\nData yang sudah dihapus tidak dapat dikembalikan.`);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide success/error messages
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            alert.style.transition = 'opacity 0.5s';
+            alert.style.opacity = '0';
+            setTimeout(function() {
+                alert.remove();
+            }, 500);
+        }, 5000);
+    });
+    
+    // Add click animation to action buttons
+    const buttons = document.querySelectorAll('button, a[href]');
+    buttons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 100);
+        });
+    });
+
+    // Log record info for debugging
+    console.log('Petugas UKS Detail Page Loaded', {
+        petugasNIP: '{{ $petugasUKS->NIP }}',
+        petugasName: '{{ $petugasUKS->nama_petugas_uks }}',
+        level: '{{ $petugasUKS->level }}',
+        status: {{ $petugasUKS->status_aktif ? 'true' : 'false' }},
+        timestamp: new Date().toISOString()
+    });
+});
+</script>
+@endpush
 @endsection

@@ -14,6 +14,63 @@
         </a>
     </div>
     
+    <!-- Tampilkan pesan sukses -->
+    @if(session('success'))
+    <div class="bg-green-50 border-l-4 border-green-500 p-4 mx-4 mt-3 flex items-center justify-between">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-check-circle text-green-500"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-green-700">
+                    {{ session('success') }}
+                </p>
+            </div>
+        </div>
+        <button type="button" class="close-alert text-green-500 hover:text-green-600" onclick="this.parentElement.style.display='none'">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    @endif
+    
+    <!-- Tampilkan pesan error -->
+    @if(session('error'))
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 mx-4 mt-3 flex items-center justify-between">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-red-500"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-red-700">
+                    {{ session('error') }}
+                </p>
+            </div>
+        </div>
+        <button type="button" class="close-alert text-red-500 hover:text-red-600" onclick="this.parentElement.style.display='none'">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    @endif
+    
+    <!-- Tampilkan pesan info -->
+    @if(session('info'))
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mx-4 mt-3 flex items-center justify-between">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-500"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    {{ session('info') }}
+                </p>
+            </div>
+        </div>
+        <button type="button" class="close-alert text-blue-500 hover:text-blue-600" onclick="this.parentElement.style.display='none'">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    @endif
+    
     <!-- Filter & Search -->
     <div class="bg-gray-50 p-4 border-b">
         <div class="flex flex-col md:flex-row gap-3 justify-between">
@@ -23,20 +80,18 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
-                <form action="{{ route('dokter.index') }}" method="GET">
-                    <input 
-                        id="searchInput" 
-                        name="search"
-                        type="text" 
-                        placeholder="Cari nama atau spesialisasi..." 
-                        value="{{ request('search') }}"
-                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
-                    >
-                </form>
+                <input 
+                    id="searchInput" 
+                    type="text" 
+                    placeholder="Cari nama atau spesialisasi..." 
+                    class="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
+                    value="{{ request('search') }}"
+                >
             </div>
 
             <!-- Tombol Aksi -->
             <div class="flex flex-wrap gap-2">
+                
                 <!-- Filter -->
                 <a 
                     href="#" 
@@ -77,8 +132,10 @@
             <tbody class="bg-white divide-y divide-gray-200" id="dokterTableBody">
                 @forelse ($dokters as $dokter)
                 <tr class="hover:bg-gray-50 transition-colors duration-150 ease-in-out">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {{ $dokter->Id_Dokter }}
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-bold rounded-full bg-blue-100 text-blue-800">
+                            {{ $dokter->Id_Dokter }}
+                        </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
@@ -97,34 +154,43 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         @if($dokter->Spesialisasi)
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                <i class="fas fa-stethoscope mr-1"></i>
-                                {{ $dokter->Spesialisasi }}
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                <i class="fas fa-stethoscope mr-1"></i> {{ $dokter->Spesialisasi }}
                             </span>
                         @else
-                            <span class="text-gray-400 italic">Belum diset</span>
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-500">
+                                <i class="fas fa-minus mr-1"></i> Belum diset
+                            </span>
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         @if($dokter->No_Telp)
-                            <div class="flex items-center">
-                                <i class="fas fa-phone text-gray-400 mr-2"></i>
-                                <span>+62{{ $dokter->No_Telp }}</span>
-                            </div>
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                <i class="fas fa-phone mr-1"></i> 
+                                @if(str_starts_with($dokter->No_Telp, '+62'))
+                                    {{ $dokter->No_Telp }}
+                                @elseif(str_starts_with($dokter->No_Telp, '62'))
+                                    +{{ $dokter->No_Telp }}
+                                @elseif(str_starts_with($dokter->No_Telp, '0'))
+                                    +62{{ substr($dokter->No_Telp, 1) }}
+                                @else
+                                    +62{{ $dokter->No_Telp }}
+                                @endif
+                            </span>
                         @else
-                            <span class="text-gray-400 italic">Belum diset</span>
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-500">
+                                <i class="fas fa-phone-slash mr-1"></i> Belum diset
+                            </span>
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         @if($dokter->status_aktif == 1)
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <i class="fas fa-check-circle mr-1"></i>
-                                Aktif
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i> Aktif
                             </span>
                         @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                <i class="fas fa-times-circle mr-1"></i>
-                                Tidak Aktif
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                <i class="fas fa-times-circle mr-1"></i> Tidak Aktif
                             </span>
                         @endif
                     </td>
@@ -158,7 +224,7 @@
                     <td colspan="6" class="px-6 py-12 text-center">
                         <div class="flex flex-col items-center justify-center">
                             <div class="bg-gray-100 rounded-full p-5 mb-4">
-                                <i class="fas fa-user-md text-4xl text-gray-400"></i>
+                                <i class="fas fa-folder-open text-4xl text-gray-400"></i>
                             </div>
                             <h3 class="text-lg font-medium text-gray-500 mb-1">Tidak ada data dokter</h3>
                             <p class="text-gray-400 mb-4">
@@ -223,9 +289,23 @@
                 <label for="spesialis" class="block text-sm font-medium text-gray-700 mb-1">Spesialisasi</label>
                 <select id="spesialis" name="spesialis" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                     <option value="">Semua Spesialisasi</option>
-                    @foreach($spesialisasi as $s)
-                        <option value="{{ $s }}" {{ request('spesialis') == $s ? 'selected' : '' }}>{{ $s }}</option>
-                    @endforeach
+                    @if(isset($spesialisasi))
+                        @foreach($spesialisasi as $s)
+                            <option value="{{ $s }}" {{ request('spesialis') == $s ? 'selected' : '' }}>{{ $s }}</option>
+                        @endforeach
+                    @else
+                        <option value="Umum" {{ request('spesialis') == 'Umum' ? 'selected' : '' }}>Umum</option>
+                        <option value="Anak" {{ request('spesialis') == 'Anak' ? 'selected' : '' }}>Anak</option>
+                        <option value="Bedah" {{ request('spesialis') == 'Bedah' ? 'selected' : '' }}>Bedah</option>
+                        <option value="Jantung" {{ request('spesialis') == 'Jantung' ? 'selected' : '' }}>Jantung</option>
+                        <option value="THT" {{ request('spesialis') == 'THT' ? 'selected' : '' }}>THT</option>
+                        <option value="Mata" {{ request('spesialis') == 'Mata' ? 'selected' : '' }}>Mata</option>
+                        <option value="Kulit & Kelamin" {{ request('spesialis') == 'Kulit & Kelamin' ? 'selected' : '' }}>Kulit & Kelamin</option>
+                        <option value="Saraf" {{ request('spesialis') == 'Saraf' ? 'selected' : '' }}>Saraf</option>
+                        <option value="Gigi" {{ request('spesialis') == 'Gigi' ? 'selected' : '' }}>Gigi</option>
+                        <option value="Psikiatri" {{ request('spesialis') == 'Psikiatri' ? 'selected' : '' }}>Psikiatri</option>
+                        <option value="Penyakit Dalam" {{ request('spesialis') == 'Penyakit Dalam' ? 'selected' : '' }}>Penyakit Dalam</option>
+                    @endif
                 </select>
             </div>
             
@@ -269,9 +349,31 @@
         const searchInput = document.getElementById('searchInput');
         
         if (searchInput) {
-            searchInput.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    this.closest('form').submit();
+            searchInput.addEventListener('keyup', function() {
+                const filter = this.value.toUpperCase();
+                const tbody = document.getElementById('dokterTableBody');
+                const rows = tbody.getElementsByTagName('tr');
+                
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i].getElementsByTagName('td').length > 1) {
+                        const idCell = rows[i].getElementsByTagName('td')[0];
+                        const namaCell = rows[i].getElementsByTagName('td')[1];
+                        const spesialisasiCell = rows[i].getElementsByTagName('td')[2];
+                        
+                        if (idCell && namaCell && spesialisasiCell) {
+                            const idValue = idCell.textContent || idCell.innerText;
+                            const namaValue = namaCell.textContent || namaCell.innerText;
+                            const spesialisasiValue = spesialisasiCell.textContent || spesialisasiCell.innerText;
+                            
+                            if (idValue.toUpperCase().indexOf(filter) > -1 || 
+                                namaValue.toUpperCase().indexOf(filter) > -1 ||
+                                spesialisasiValue.toUpperCase().indexOf(filter) > -1) {
+                                rows[i].style.display = '';
+                            } else {
+                                rows[i].style.display = 'none';
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -297,18 +399,6 @@
                 }
             });
         }
-
-        // Auto-hide success/error messages
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-            setTimeout(function() {
-                alert.style.transition = 'opacity 0.5s';
-                alert.style.opacity = '0';
-                setTimeout(function() {
-                    alert.remove();
-                }, 500);
-            }, 5000);
-        });
     });
 </script>
 @endpush

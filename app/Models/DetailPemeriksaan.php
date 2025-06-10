@@ -9,7 +9,7 @@ class DetailPemeriksaan extends Model
 {
     use HasFactory;
     
-    protected $table = 'detail_pemeriksaans'; // Sesuai dengan nama tabel di migration
+    protected $table = 'detail_pemeriksaans';
     protected $primaryKey = 'id_detprx';
     protected $keyType = 'string';
     public $incrementing = false;
@@ -18,7 +18,7 @@ class DetailPemeriksaan extends Model
         'id_detprx',
         'tanggal_jam',
         'id_siswa',
-        'status_pemeriksaan', // Kolom yang hilang
+        'status_pemeriksaan',
         'id_dokter',
         'nip'
     ];
@@ -61,20 +61,23 @@ class DetailPemeriksaan extends Model
         return 'DP' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
-    // Relasi dengan tabel lain
+    // PERBAIKAN: Relasi dengan tabel lain - sesuaikan dengan schema database
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa', 'id_siswa');
     }
 
+    // PERBAIKAN: Foreign key harus sesuai dengan schema database
+    // detail_pemeriksaans.id_dokter -> dokters.Id_Dokter
     public function dokter()
     {
-        return $this->belongsTo(Dokter::class, 'id_dokter', 'id_dokter');
+        return $this->belongsTo(Dokter::class, 'id_dokter', 'Id_Dokter');
     }
 
-    public function petugasUKS()
+    // PERBAIKAN: Nama method konsisten dengan konvensi Laravel
+    public function petugasUks()
     {
-        return $this->belongsTo(PetugasUKS::class, 'nip', 'nip');
+        return $this->belongsTo(PetugasUKS::class, 'nip', 'NIP');
     }
 
     public function pemeriksaanFisik()

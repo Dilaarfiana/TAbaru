@@ -224,7 +224,10 @@ Route::middleware(['auth.custom'])->group(function () {
 
         // ADMIN - KELAS (Full CRUD)
         Route::resource('kelas', KelasController::class);
-
+        Route::get('kelas/{kelas}/tambah-siswa', [KelasController::class, 'tambahSiswa'])->name('kelas.tambah-siswa');
+        Route::post('kelas/{kelas}/tambah-siswa', [KelasController::class, 'storeTambahSiswa'])->name('kelas.store-tambah-siswa');
+        Route::delete('kelas/{kelas}/remove-siswa/{siswa}', [KelasController::class, 'removeSiswa'])->name('kelas.remove-siswa');
+        
         // ADMIN - JURUSAN (Full CRUD)
         Route::resource('jurusan', JurusanController::class);
 

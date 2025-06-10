@@ -3,7 +3,7 @@
 @section('content')
 <div class="p-4 bg-gray-50 min-h-screen">
     <!-- Form Card -->
-    <div class="max-w-5xl mx-auto bg-white rounded-md shadow">
+    <div class="max-w-6xl mx-auto bg-white rounded-md shadow">
         <!-- Header - putih dengan icon dan text berwarna -->
         <div class="bg-white rounded-t-md px-6 py-4 flex justify-between items-center border-b">
             <div class="flex items-center">
