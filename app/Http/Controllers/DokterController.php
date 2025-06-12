@@ -73,7 +73,8 @@ class DokterController extends Controller
             'password' => 'nullable|string|min:6|max:20',
         ]);
 
-        $data = $validatedData;
+        // Siapkan data untuk disimpan
+        $data = collect($validatedData)->except(['password'])->toArray();
         
         // Jika ID kosong, generate ID otomatis
         if (empty($data['Id_Dokter'])) {
@@ -86,24 +87,26 @@ class DokterController extends Controller
         }
         
         // Format nomor telepon jika belum menggunakan format +62
-        if (!empty($data['No_Telp']) && !str_starts_with($data['No_Telp'], '+62')) {
+        if (!empty($validatedData['No_Telp']) && !str_starts_with($validatedData['No_Telp'], '+62')) {
             // Hapus angka 0 di depan jika ada
-            if (str_starts_with($data['No_Telp'], '0')) {
-                $data['No_Telp'] = substr($data['No_Telp'], 1);
+            $phoneNumber = $validatedData['No_Telp'];
+            if (str_starts_with($phoneNumber, '0')) {
+                $phoneNumber = substr($phoneNumber, 1);
             }
             
             // Jika belum ada prefix +62, tambahkan
-            $data['No_Telp'] = '+62' . $data['No_Telp'];
+            $data['No_Telp'] = '+62' . $phoneNumber;
+        } else {
+            $data['No_Telp'] = $validatedData['No_Telp'] ?? null;
         }
         
-        // Jika ada password, hash password tersebut
-        if (!empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
-            unset($data['password']);
+        // Handle password secara terpisah untuk menghindari hash ganda
+        if (!empty($validatedData['password'])) {
+            $data['password'] = Hash::make($validatedData['password']);
         }
 
-        Dokter::create($data);
+        // Buat dokter baru
+        $dokter = Dokter::create($data);
 
         return redirect()->route('dokter.index')
             ->with('success', 'Data dokter berhasil ditambahkan.');
@@ -163,7 +166,8 @@ class DokterController extends Controller
             'password' => 'nullable|string|min:6|max:20',
         ]);
 
-        $data = $validatedData;
+        // Siapkan data untuk update (exclude password dulu)
+        $data = collect($validatedData)->except(['password'])->toArray();
         
         // Set default status_aktif jika tidak ada
         if (!isset($data['status_aktif'])) {
@@ -171,23 +175,25 @@ class DokterController extends Controller
         }
         
         // Format nomor telepon jika belum menggunakan format +62
-        if (!empty($data['No_Telp']) && !str_starts_with($data['No_Telp'], '+62')) {
+        if (!empty($validatedData['No_Telp']) && !str_starts_with($validatedData['No_Telp'], '+62')) {
             // Hapus angka 0 di depan jika ada
-            if (str_starts_with($data['No_Telp'], '0')) {
-                $data['No_Telp'] = substr($data['No_Telp'], 1);
+            $phoneNumber = $validatedData['No_Telp'];
+            if (str_starts_with($phoneNumber, '0')) {
+                $phoneNumber = substr($phoneNumber, 1);
             }
             
             // Jika belum ada prefix +62, tambahkan
-            $data['No_Telp'] = '+62' . $data['No_Telp'];
+            $data['No_Telp'] = '+62' . $phoneNumber;
+        } else {
+            $data['No_Telp'] = $validatedData['No_Telp'] ?? null;
         }
         
-        // Jika ada password baru, hash password tersebut
-        if (!empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
-            unset($data['password']);
+        // Handle password secara terpisah untuk menghindari hash ganda
+        if (!empty($validatedData['password'])) {
+            $data['password'] = Hash::make($validatedData['password']);
         }
 
+        // Update dokter
         $dokter->update($data);
 
         return redirect()->route('dokter.index')
@@ -272,5 +278,25 @@ class DokterController extends Controller
         $nextNumber = $lastNumber + 1;
         
         return 'DO' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Method untuk testing password (untuk debugging)
+     */
+    public function testPassword(Request $request)
+    {
+        if (app()->environment() !== 'local') {
+            abort(403, 'Method ini hanya tersedia di environment local');
+        }
+
+        $password = $request->input('password', 'test123');
+        $hashedPassword = Hash::make($password);
+        
+        return response()->json([
+            'original_password' => $password,
+            'hashed_password' => $hashedPassword,
+            'verify_check' => Hash::check($password, $hashedPassword),
+            'hash_length' => strlen($hashedPassword)
+        ]);
     }
 }

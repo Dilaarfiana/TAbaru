@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
-class Dokter extends Model
+class Dokter extends Authenticatable
 {
     use HasFactory;
 
@@ -23,7 +23,7 @@ class Dokter extends Model
         'No_Telp',
         'Alamat',
         'status_aktif',
-        'password'
+        'password',
     ];
 
     protected $hidden = [
@@ -32,120 +32,126 @@ class Dokter extends Model
 
     protected $casts = [
         'status_aktif' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    protected $appends = [
-        'formatted_phone',
-    ];
-
-    // Validation rules
-    public static function rules($id = null)
-    {
-        return [
-            'Id_Dokter' => 'required|string|max:5|unique:dokters,Id_Dokter,' . $id,
-            'Nama_Dokter' => 'required|string|max:50',
-            'Spesialisasi' => 'nullable|string|max:25',
-            'No_Telp' => 'nullable|string|max:15',
-            'Alamat' => 'nullable|string',
-            'status_aktif' => 'boolean',
-            'password' => 'nullable|string|min:6'
-        ];
-    }
-
-    // Method untuk mendapatkan ID dokter berikutnya
-    public static function getNextId()
-    {
-        $lastDokter = self::orderBy('Id_Dokter', 'desc')->first();
-
-        if (!$lastDokter) {
-            return 'DO001';
-        }
-
-        $lastId = $lastDokter->Id_Dokter;
-        $numberPart = intval(substr($lastId, 2));
-        $nextNumber = $numberPart + 1;
-
-        return 'DO' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-    }
-
-    // Boot method untuk set ID otomatis jika tidak disediakan
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (empty($model->Id_Dokter)) {
-                $model->Id_Dokter = self::getNextId();
-            }
-        });
-    }
-
-    // Mutator untuk meng-hash password otomatis
-    public function setPasswordAttribute($value)
-    {
-        if (!empty($value)) {
-            $this->attributes['password'] = bcrypt($value);
-        }
-    }
-
-    // Accessor untuk format No_Telp
-    public function getFormattedPhoneAttribute()
-    {
-        if (empty($this->No_Telp)) {
-            return '';
-        }
-
-        $phone = preg_replace('/[^0-9]/', '', $this->No_Telp);
-        
-        if (str_starts_with($phone, '62')) {
-            return '0' . substr($phone, 2);
-        }
-        
-        return $phone;
-    }
-
-    // Scopes
-    public function scopeAktif($query)
-    {
-        return $query->where('status_aktif', true);
-    }
-
-    public function scopeDenganSpesialisasi($query, $spesialisasi)
-    {
-        return $query->where('Spesialisasi', $spesialisasi);
-    }
-
-    // Relasi dengan tabel Rekam_Medis
+    // PENTING: JANGAN TAMBAHKAN MUTATOR PASSWORD DI SINI
+    // Karena password sudah di-hash di controller
+    
+    /**
+     * Relationship dengan rekam medis
+     */
     public function rekamMedis()
     {
         return $this->hasMany(RekamMedis::class, 'Id_Dokter', 'Id_Dokter');
     }
 
-    // Relasi dengan tabel Detail_Pemeriksaan
+    /**
+     * Relationship dengan detail pemeriksaan
+     */
     public function detailPemeriksaan()
     {
         return $this->hasMany(DetailPemeriksaan::class, 'id_dokter', 'Id_Dokter');
     }
 
-    // Relasi dengan tabel Resep
+    /**
+     * Relationship dengan resep
+     */
     public function resep()
     {
         return $this->hasMany(Resep::class, 'Id_Dokter', 'Id_Dokter');
     }
 
-    // Helper methods
-    public function isAktif()
+
+    /**
+     * Accessor untuk status aktif dalam bentuk text
+     */
+    public function getStatusTextAttribute()
     {
-        return $this->status_aktif;
+        return $this->status_aktif ? 'Aktif' : 'Tidak Aktif';
     }
 
-    public function getTotalPasien()
+    /**
+     * Accessor untuk nomor telepon yang terformat
+     */
+    public function getFormattedPhoneAttribute()
     {
-        return $this->rekamMedis()->distinct('Id_Siswa')->count();
+        if (!$this->No_Telp) {
+            return null;
+        }
+
+        $phone = $this->No_Telp;
+        
+        // Jika sudah ada +62, return as is
+        if (str_starts_with($phone, '+62')) {
+            return $phone;
+        }
+        
+        // Jika dimulai dengan 62, tambahkan +
+        if (str_starts_with($phone, '62')) {
+            return '+' . $phone;
+        }
+        
+        // Jika dimulai dengan 0, ganti dengan +62
+        if (str_starts_with($phone, '0')) {
+            return '+62' . substr($phone, 1);
+        }
+        
+        // Jika langsung angka 8 atau 9, tambahkan +62
+        return '+62' . $phone;
     }
 
-    public function getTotalPemeriksaan()
+    /**
+     * Scope untuk dokter aktif
+     */
+    public function scopeActive($query)
     {
-        return $this->detailPemeriksaan()->count();
+        return $query->where('status_aktif', 1);
+    }
+
+    /**
+     * Scope untuk dokter tidak aktif
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('status_aktif', 0);
+    }
+
+    /**
+     * Scope untuk filter berdasarkan spesialisasi
+     */
+    public function scopeBySpecialization($query, $specialization)
+    {
+        return $query->where('Spesialisasi', $specialization);
+    }
+
+    /**
+     * Method untuk verifikasi password
+     */
+    public function verifyPassword($password)
+    {
+        return Hash::check($password, $this->password);
+    }
+
+    /**
+     * Method untuk update password
+     * Gunakan ini jika ingin update password dari tempat lain
+     */
+    public function updatePassword($newPassword)
+    {
+        $this->update([
+            'password' => Hash::make($newPassword)
+        ]);
+    }
+
+    /**
+     * Method untuk reset password ke default
+     */
+    public function resetPasswordToDefault()
+    {
+        $defaultPassword = 'dokter123';
+        $this->updatePassword($defaultPassword);
+        return $defaultPassword;
     }
 }

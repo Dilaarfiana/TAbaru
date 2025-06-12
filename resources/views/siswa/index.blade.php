@@ -149,18 +149,118 @@
     <!-- Filter & Search -->
     <div class="bg-gray-50 p-4 border-b">
         <div class="flex flex-col md:flex-row gap-3 justify-between">
-            <div class="relative">
+            
+            <!-- Input Pencarian -->
+            <div class="relative w-full md:w-64">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
                 <form id="searchForm" action="{{ route($indexRoute) }}" method="GET" class="inline">
-                    <input id="searchInput" name="keyword" type="text" placeholder="Cari ID atau nama siswa..." class="pl-10 pr-10 py-2 border border-gray-300 rounded-md w-full md:w-64 focus:ring-blue-500 focus:border-blue-500" value="{{ request('keyword') }}">
+                    <input id="searchInput" name="keyword" type="text" placeholder="Cari ID atau nama siswa..." class="pl-10 pr-10 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500" value="{{ request('keyword') }}">
                     <button type="button" id="clearSearchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" style="display: {{ request('keyword') ? 'block' : 'none' }};">
                         &times;
                     </button>
                 </form>
             </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex flex-wrap gap-2">
+                
+                <!-- Filter -->
+                <a 
+                    href="#" 
+                    id="showFilterModal" 
+                    class="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center"
+                >
+                    <i class="fas fa-filter mr-2 text-blue-500"></i> Filter
+                    @if(request()->anyFilled(['status', 'jenis_kelamin', 'tahun_masuk', 'kelas', 'jurusan', 'status_alokasi']))
+                        <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                            {{ collect(request()->only(['status', 'jenis_kelamin', 'tahun_masuk', 'kelas', 'jurusan', 'status_alokasi']))->filter()->count() }}
+                        </span>
+                    @endif
+                </a>
+
+                <!-- Reset Filter (jika ada filter aktif) -->
+                @if(request()->anyFilled(['keyword', 'status', 'jenis_kelamin', 'tahun_masuk', 'kelas', 'jurusan', 'status_alokasi']))
+                    <a 
+                        href="{{ route($indexRoute) }}" 
+                        class="bg-gray-500 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-600 flex items-center"
+                    >
+                        <i class="fas fa-times mr-2"></i> Reset
+                    </a>
+                @endif
+            </div>
         </div>
+
+        <!-- Active Filters Display -->
+        @if(request()->anyFilled(['keyword', 'status', 'jenis_kelamin', 'tahun_masuk', 'kelas', 'jurusan', 'status_alokasi']))
+        <div class="mt-3 flex flex-wrap gap-2">
+            <span class="text-sm text-gray-600 font-medium">Filter aktif:</span>
+            
+            @if(request('keyword'))
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Kata kunci: "{{ request('keyword') }}"
+                    <a href="{{ request()->fullUrlWithQuery(['keyword' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+            @endif
+
+            @if(request('status'))
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Status: {{ request('status') == '1' ? 'Aktif' : 'Tidak Aktif' }}
+                    <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}" class="ml-1 text-green-600 hover:text-green-800">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+            @endif
+
+            @if(request('jenis_kelamin'))
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    Jenis Kelamin: {{ request('jenis_kelamin') == 'L' ? 'Laki-laki' : 'Perempuan' }}
+                    <a href="{{ request()->fullUrlWithQuery(['jenis_kelamin' => null]) }}" class="ml-1 text-purple-600 hover:text-purple-800">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+            @endif
+
+            @if(request('tahun_masuk'))
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Tahun Masuk: {{ request('tahun_masuk') }}
+                    <a href="{{ request()->fullUrlWithQuery(['tahun_masuk' => null]) }}" class="ml-1 text-yellow-600 hover:text-yellow-800">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+            @endif
+
+            @if(request('kelas'))
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    Kelas: {{ request('kelas') }}
+                    <a href="{{ request()->fullUrlWithQuery(['kelas' => null]) }}" class="ml-1 text-indigo-600 hover:text-indigo-800">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+            @endif
+
+            @if(request('jurusan'))
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Jurusan: {{ request('jurusan') }}
+                    <a href="{{ request()->fullUrlWithQuery(['jurusan' => null]) }}" class="ml-1 text-red-600 hover:text-red-800">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+            @endif
+
+            @if(request('status_alokasi'))
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    Status Alokasi: {{ request('status_alokasi') == 'sudah' ? 'Sudah Dialokasi' : 'Belum Dialokasi' }}
+                    <a href="{{ request()->fullUrlWithQuery(['status_alokasi' => null]) }}" class="ml-1 text-orange-600 hover:text-orange-800">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </span>
+            @endif
+        </div>
+        @endif
     </div>
     
     <!-- Alert Messages -->
@@ -415,6 +515,100 @@
     </div>
 </div>
 
+<!-- Filter Modal -->
+<div id="filterModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium">Filter Data Siswa</h3>
+            <button id="closeFilterModal" class="text-gray-600 hover:text-gray-800">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form action="{{ route($indexRoute) }}" method="GET">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Filter Status -->
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status Siswa</label>
+                    <select id="status" name="status" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Semua Status</option>
+                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Aktif</option>
+                        <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
+                    </select>
+                </div>
+                
+                <!-- Filter Jenis Kelamin -->
+                <div class="mb-4">
+                    <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                    <select id="jenis_kelamin" name="jenis_kelamin" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Semua Jenis Kelamin</option>
+                        <option value="L" {{ request('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                        <option value="P" {{ request('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                    </select>
+                </div>
+                
+                <!-- Filter Tahun Masuk -->
+                <div class="mb-4">
+                    <label for="tahun_masuk" class="block text-sm font-medium text-gray-700 mb-1">Tahun Masuk</label>
+                    <select id="tahun_masuk" name="tahun_masuk" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Semua Tahun</option>
+                        @for($year = date('Y'); $year >= 2020; $year--)
+                            <option value="{{ $year }}" {{ request('tahun_masuk') == $year ? 'selected' : '' }}>{{ $year }}</option>
+                        @endfor
+                    </select>
+                </div>
+                
+                <!-- Filter Status Alokasi -->
+                <div class="mb-4">
+                    <label for="status_alokasi" class="block text-sm font-medium text-gray-700 mb-1">Status Alokasi</label>
+                    <select id="status_alokasi" name="status_alokasi" class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Semua Status Alokasi</option>
+                        <option value="sudah" {{ request('status_alokasi') == 'sudah' ? 'selected' : '' }}>Sudah Dialokasi</option>
+                        <option value="belum" {{ request('status_alokasi') == 'belum' ? 'selected' : '' }}>Belum Dialokasi</option>
+                    </select>
+                </div>
+                
+                <!-- Filter Kelas -->
+                <div class="mb-4">
+                    <label for="kelas" class="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+                    <input type="text" id="kelas" name="kelas" value="{{ request('kelas') }}" 
+                           class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Contoh: XII TKJ 1">
+                </div>
+                
+                <!-- Filter Jurusan -->
+                <div class="mb-4">
+                    <label for="jurusan" class="block text-sm font-medium text-gray-700 mb-1">Jurusan</label>
+                    <input type="text" id="jurusan" name="jurusan" value="{{ request('jurusan') }}" 
+                           class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Contoh: Teknik Komputer">
+                </div>
+                
+                <!-- Kata Kunci Pencarian -->
+                <div class="mb-4 md:col-span-2">
+                    <label for="keyword" class="block text-sm font-medium text-gray-700 mb-1">Kata Kunci</label>
+                    <input type="text" id="keyword" name="keyword" value="{{ request('keyword') }}" 
+                           class="block w-full border border-gray-300 rounded-md h-10 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Cari berdasarkan ID atau nama siswa...">
+                </div>
+            </div>
+            
+            <!-- Tombol Filter -->
+            <div class="flex justify-end space-x-2 mt-6">
+                @if(request()->anyFilled(['keyword', 'status', 'jenis_kelamin', 'tahun_masuk', 'kelas', 'jurusan', 'status_alokasi']))
+                    <a href="{{ route($indexRoute) }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200">
+                        Reset
+                    </a>
+                @endif
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors duration-200">
+                    Terapkan Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -424,6 +618,62 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn('Access violation detected: Parent trying to access student list');
         window.location.href = '{{ route("orangtua.siswa.show") }}';
         return;
+    }
+
+    // Clear search functionality
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (clearSearchBtn && searchInput) {
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            document.getElementById('searchForm').submit();
+        });
+        
+        searchInput.addEventListener('input', function() {
+            clearSearchBtn.style.display = this.value ? 'block' : 'none';
+        });
+    }
+
+    // Filter modal functionality
+    const filterBtn = document.getElementById('showFilterModal');
+    const filterModal = document.getElementById('filterModal');
+    const closeFilterModal = document.getElementById('closeFilterModal');
+    
+    if (filterBtn && filterModal && closeFilterModal) {
+        filterBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            filterModal.classList.remove('hidden');
+        });
+        
+        closeFilterModal.addEventListener('click', function() {
+            filterModal.classList.add('hidden');
+        });
+        
+        window.addEventListener('click', function(e) {
+            if (e.target === filterModal) {
+                filterModal.classList.add('hidden');
+            }
+        });
+    }
+
+    // Real-time search functionality (optional)
+    let searchTimeout;
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchForm').submit();
+                return;
+            }
+            
+            // Optional: implement debounced real-time search
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                // Uncomment below for real-time search
+                // document.getElementById('searchForm').submit();
+            }, 1000);
+        });
     }
 });
 </script>

@@ -130,7 +130,7 @@
                         </span>
                     </button>
                     
-                    <!-- Notifications Dropdown -->
+                    <!-- Notifications Dropdown - FIXED VERSION -->
                     <div x-show="open" 
                         @click.away="open = false"
                         x-transition:enter="transition ease-out duration-200"
@@ -139,10 +139,11 @@
                         x-transition:leave="transition ease-in duration-100"
                         x-transition:leave-start="transform opacity-100 scale-100"
                         x-transition:leave-end="transform opacity-0 scale-95"
-                        class="origin-top-right absolute right-0 mt-2 w-96 rounded-lg bg-white shadow-xl z-50 border border-gray-200 max-h-96 overflow-hidden">
+                        class="origin-top-right absolute right-0 mt-2 w-96 rounded-lg bg-white shadow-xl z-50 border border-gray-200 flex flex-col notification-dropdown"
+                        style="max-height: calc(100vh - 120px);">
                         
-                        <!-- Header -->
-                        <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200 flex justify-between items-center">
+                        <!-- Header - Fixed -->
+                        <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200 flex justify-between items-center flex-shrink-0 rounded-t-lg">
                             <div class="flex items-center space-x-2">
                                 <i class="fas fa-bell text-blue-600"></i>
                                 <h3 class="text-sm font-semibold text-gray-900">Notifikasi</h3>
@@ -154,15 +155,15 @@
                                 </span>
                                 <button @click="markAllAsRead()" 
                                         x-show="unreadCount > 0"
-                                        class="text-xs text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-50 px-2 py-1 rounded">
+                                        class="text-xs text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-200">
                                     <i class="fas fa-check-double mr-1"></i>
                                     Tandai Semua
                                 </button>
                             </div>
                         </div>
                         
-                        <!-- Notifications List -->
-                        <div class="max-h-80 overflow-y-auto">
+                        <!-- Content Area - Scrollable -->
+                        <div class="flex-1 overflow-y-auto notification-content" style="min-height: 200px; max-height: calc(100vh - 220px);">
                             <!-- Loading State -->
                             <div x-show="loading" class="p-6 text-center">
                                 <i class="fas fa-spinner fa-spin text-blue-500 mr-2"></i>
@@ -177,7 +178,7 @@
                                 <h4 class="text-sm font-medium text-gray-900 mb-2">Terjadi Masalah</h4>
                                 <p class="text-xs text-gray-500 mb-3" x-text="error"></p>
                                 <button @click="fetchNotifications()" 
-                                        class="text-xs text-blue-600 hover:text-blue-800 font-medium bg-blue-50 px-3 py-1 rounded">
+                                        class="text-xs text-blue-600 hover:text-blue-800 font-medium bg-blue-50 px-3 py-1 rounded transition-colors duration-200">
                                     <i class="fas fa-refresh mr-1"></i>
                                     Coba Lagi
                                 </button>
@@ -192,64 +193,67 @@
                                 <p class="text-xs text-gray-500">Notifikasi tentang kesehatan anak Anda akan muncul di sini</p>
                             </div>
                             
-                            <!-- Notifications -->
-                            <template x-for="notification in notifications" :key="notification.id">
-                                <div class="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
-                                     :class="notification.is_read ? 'opacity-75' : 'bg-blue-50 border-l-4 border-l-blue-500'"
-                                     @click="if(!notification.is_read) markAsRead(notification.id)">
-                                    <div class="p-4 space-y-2">
-                                        <div class="flex items-start justify-between">
-                                            <div class="flex items-center space-x-2 flex-1">
-                                                <div class="flex-shrink-0">
-                                                    <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                                                         :class="{
-                                                             'bg-blue-100': notification.color === 'text-blue-500',
-                                                             'bg-green-100': notification.color === 'text-green-500',
-                                                             'bg-red-100': notification.color === 'text-red-500',
-                                                             'bg-purple-100': notification.color === 'text-purple-500',
-                                                             'bg-orange-100': notification.color === 'text-orange-500'
-                                                         }">
-                                                        <i :class="notification.icon + ' ' + notification.color + ' text-sm'"></i>
+                            <!-- Notifications List -->
+                            <div x-show="!loading && !error && notifications.length > 0">
+                                <template x-for="notification in notifications" :key="notification.id">
+                                    <div class="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                                         :class="notification.is_read ? 'opacity-75' : 'bg-blue-50 border-l-4 border-l-blue-500'"
+                                         @click="if(!notification.is_read) markAsRead(notification.id)">
+                                        <div class="p-4 space-y-2">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex items-center space-x-2 flex-1">
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                                                             :class="{
+                                                                 'bg-blue-100': notification.color === 'text-blue-500',
+                                                                 'bg-green-100': notification.color === 'text-green-500',
+                                                                 'bg-red-100': notification.color === 'text-red-500',
+                                                                 'bg-purple-100': notification.color === 'text-purple-500',
+                                                                 'bg-orange-100': notification.color === 'text-orange-500'
+                                                             }">
+                                                            <i :class="notification.icon + ' ' + notification.color + ' text-sm'"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-center space-x-2">
+                                                            <h4 class="text-sm font-medium text-gray-900 truncate" x-text="notification.title"></h4>
+                                                            <span x-show="!notification.is_read" 
+                                                                  class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div class="flex-1 min-w-0">
-                                                    <div class="flex items-center space-x-2">
-                                                        <h4 class="text-sm font-medium text-gray-900 truncate" x-text="notification.title"></h4>
-                                                        <span x-show="!notification.is_read" 
-                                                              class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
-                                                    </div>
-                                                </div>
+                                                <button @click.stop="markAsRead(notification.id)" 
+                                                        x-show="!notification.is_read"
+                                                        class="text-xs text-blue-600 hover:text-blue-800 ml-2 flex-shrink-0 hover:bg-blue-50 px-2 py-1 rounded transition-colors duration-200">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
                                             </div>
-                                            <button @click.stop="markAsRead(notification.id)" 
-                                                    x-show="!notification.is_read"
-                                                    class="text-xs text-blue-600 hover:text-blue-800 ml-2 flex-shrink-0 hover:bg-blue-50 px-2 py-1 rounded">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <p class="text-sm text-gray-600" x-text="notification.message"></p>
-                                        
-                                        <div class="flex items-center justify-between text-xs">
-                                            <div class="flex items-center space-x-3 text-gray-500">
-                                                <span class="flex items-center">
-                                                    <i class="fas fa-user mr-1"></i>
-                                                    <span x-text="notification.siswa_nama"></span>
-                                                </span>
-                                                <span class="flex items-center">
-                                                    <i class="fas fa-clock mr-1"></i>
-                                                    <span x-text="notification.time_ago"></span>
-                                                </span>
+                                            
+                                            <p class="text-sm text-gray-600" x-text="notification.message"></p>
+                                            
+                                            <div class="flex items-center justify-between text-xs">
+                                                <div class="flex items-center space-x-3 text-gray-500">
+                                                    <span class="flex items-center">
+                                                        <i class="fas fa-user mr-1"></i>
+                                                        <span x-text="notification.siswa_nama"></span>
+                                                    </span>
+                                                    <span class="flex items-center">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        <span x-text="notification.time_ago"></span>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
                         </div>
                         
-                        <!-- Footer -->
-                        <div x-show="notifications.length > 0" class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                        <!-- Footer - Fixed at Bottom -->
+                        <div x-show="!loading && !error && notifications.length > 0" 
+                             class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex-shrink-0 rounded-b-lg">
                             <a href="{{ route('orangtua.notifications.index') }}" 
-                               class="block text-center text-sm text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-50 py-1 rounded transition-colors duration-200">
+                               class="block text-center text-sm text-blue-600 hover:text-blue-800 font-medium hover:bg-blue-50 py-2 rounded transition-colors duration-200 w-full">
                                 <i class="fas fa-external-link-alt mr-1"></i>
                                 Lihat Semua Notifikasi
                             </a>
@@ -296,7 +300,7 @@
                         class="origin-top-right absolute right-0 mt-2 w-64 rounded-lg bg-white shadow-lg z-50 divide-y divide-gray-100 border border-gray-200">
                         
                         <!-- User Info Header -->
-                        <div class="px-4 py-3 bg-gray-50">
+                        <div class="px-4 py-3 bg-gray-50 rounded-t-lg">
                             <div class="flex items-center">
                                 <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center font-semibold">
                                     {{ strtoupper($initials ?: 'U') }}
@@ -315,15 +319,15 @@
                         </div>
                         
                         <div class="py-1">
-                            <a href="{{ route('profile.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <a href="{{ route('profile.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                                 <i class="fas fa-user-circle text-blue-500 mr-3 w-5 text-center"></i> 
                                 Profil Saya
                             </a>
-                            <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                                 <i class="fas fa-edit text-green-500 mr-3 w-5 text-center"></i> 
                                 Edit Profil
                             </a>
-                            <a href="{{ route('change.password') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                            <a href="{{ route('change.password') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
                                 <i class="fas fa-key text-orange-500 mr-3 w-5 text-center"></i> 
                                 Ganti Password
                             </a>
@@ -332,7 +336,7 @@
                         <div class="py-1">
                             <button type="button" 
                                     onclick="simpleLogout()"
-                                    class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left border-none bg-transparent cursor-pointer"
+                                    class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left border-none bg-transparent cursor-pointer transition-colors duration-200"
                                     id="logout-btn">
                                 <i class="fas fa-sign-out-alt text-red-500 mr-3 w-5 text-center" id="logout-icon"></i> 
                                 <span id="logout-text">Keluar</span>
@@ -349,6 +353,77 @@
 <form method="POST" action="{{ route('logout') }}" style="display: none;" id="header-logout-form">
     @csrf
 </form>
+
+<style>
+/* Notification Dropdown Responsive Styles */
+@media (max-height: 600px) {
+    .notification-dropdown {
+        max-height: calc(100vh - 80px) !important;
+    }
+    
+    .notification-content {
+        max-height: calc(100vh - 180px) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .notification-dropdown {
+        width: calc(100vw - 32px) !important;
+        max-width: 380px !important;
+        right: 16px !important;
+        left: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification-dropdown {
+        width: calc(100vw - 16px) !important;
+        right: 8px !important;
+        left: 8px !important;
+    }
+}
+
+/* Smooth scrolling for notification content */
+.notification-content {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.notification-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-content::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+}
+
+.notification-content::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+
+.notification-content::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Animation improvements */
+.transition-colors {
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+/* Fix for notification badge positioning */
+@media (max-width: 640px) {
+    .relative button[title="Notifikasi"] {
+        padding: 8px;
+    }
+    
+    .relative button[title="Notifikasi"] .absolute {
+        top: -2px;
+        right: -2px;
+    }
+}
+</style>
 
 <script>
     // Simple logout function
@@ -372,4 +447,32 @@
             }, 500);
         }
     }
+
+    // Handle notification errors gracefully
+    document.addEventListener('alpine:init', () => {
+        // Add global error handling for fetch requests
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return originalFetch.apply(this, args)
+                .catch(error => {
+                    console.error('Network error:', error);
+                    throw error;
+                });
+        };
+    });
+
+    // Handle mobile menu toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', function() {
+                // This will be handled by your sidebar component
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar) {
+                    sidebar.classList.toggle('translate-x-0');
+                    sidebar.classList.toggle('-translate-x-full');
+                }
+            });
+        }
+    });
 </script>

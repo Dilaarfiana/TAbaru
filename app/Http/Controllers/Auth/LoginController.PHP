@@ -80,7 +80,7 @@ class LoginController extends Controller
             return redirect()->intended('/dokter/dashboard')->with('success', 'Login berhasil sebagai Dokter');
         }
 
-        // Cek Orang Tua - Username: id_siswa, Password: tanggal lahir siswa (ddmmyyyy)
+        // ✅ PERBAIKAN: Cek Orang Tua - Username: id_siswa, Password: dari database (hash)
         $orangTua = DB::table('orang_tuas')
             ->join('siswas', 'orang_tuas.id_siswa', '=', 'siswas.id_siswa')
             ->where('orang_tuas.id_siswa', $username)
@@ -88,46 +88,41 @@ class LoginController extends Controller
             ->select('orang_tuas.*', 'siswas.tanggal_lahir', 'siswas.nama_siswa')
             ->first();
 
-        if ($orangTua) {
-            // Format tanggal lahir siswa ke ddmmyyyy
-            $tanggalLahir = Carbon::parse($orangTua->tanggal_lahir);
-            $passwordExpected = $tanggalLahir->format('dmY'); // Format: ddmmyyyy
-
-            if ($password === $passwordExpected) {
-                // Tentukan nama yang akan ditampilkan (prioritas: ayah, lalu ibu)
-                $namaOrangTua = $orangTua->nama_ayah ?: $orangTua->nama_ibu;
-                
-                // Jika tidak ada nama ayah/ibu, gunakan default
-                if (!$namaOrangTua) {
-                    $namaOrangTua = 'Orang Tua ' . $orangTua->nama_siswa;
-                }
-
-                session([
-                    'user_id' => $orangTua->id_orang_tua,
-                    'username' => $namaOrangTua, // ✅ Gunakan 'username' bukan 'user_name'
-                    'user_type' => 'orang_tua',
-                    'user_level' => 'orang_tua',
-                    'is_logged_in' => true,
-                    'login_time' => now(),
-                    'siswa_id' => $orangTua->id_siswa,
-                    'siswa_name' => $orangTua->nama_siswa,
-                    'id_orang_tua' => $orangTua->id_orang_tua,
-                    'full_name' => $namaOrangTua,
-                    // Data lengkap orang tua
-                    'nama_ayah' => $orangTua->nama_ayah,
-                    'nama_ibu' => $orangTua->nama_ibu,
-                    'tanggal_lahir_ayah' => $orangTua->tanggal_lahir_ayah,
-                    'tanggal_lahir_ibu' => $orangTua->tanggal_lahir_ibu,
-                    'pekerjaan_ayah' => $orangTua->pekerjaan_ayah,
-                    'pekerjaan_ibu' => $orangTua->pekerjaan_ibu,
-                    'pendidikan_ayah' => $orangTua->pendidikan_ayah,
-                    'pendidikan_ibu' => $orangTua->pendidikan_ibu,
-                    'alamat' => $orangTua->alamat,
-                    'no_telp' => $orangTua->no_telp,
-                ]);
-
-                return redirect()->intended('/orangtua/dashboard')->with('success', 'Login berhasil sebagai Orang Tua');
+        // ✅ GUNAKAN Hash::check() - BUKAN lagi perbandingan tanggal lahir langsung
+        if ($orangTua && Hash::check($password, $orangTua->password)) {
+            // Tentukan nama yang akan ditampilkan (prioritas: ayah, lalu ibu)
+            $namaOrangTua = $orangTua->nama_ayah ?: $orangTua->nama_ibu;
+            
+            // Jika tidak ada nama ayah/ibu, gunakan default
+            if (!$namaOrangTua) {
+                $namaOrangTua = 'Orang Tua ' . $orangTua->nama_siswa;
             }
+
+            session([
+                'user_id' => $orangTua->id_orang_tua,
+                'username' => $namaOrangTua, // ✅ Gunakan 'username' bukan 'user_name'
+                'user_type' => 'orang_tua',
+                'user_level' => 'orang_tua',
+                'is_logged_in' => true,
+                'login_time' => now(),
+                'siswa_id' => $orangTua->id_siswa,
+                'siswa_name' => $orangTua->nama_siswa,
+                'id_orang_tua' => $orangTua->id_orang_tua,
+                'full_name' => $namaOrangTua,
+                // Data lengkap orang tua
+                'nama_ayah' => $orangTua->nama_ayah,
+                'nama_ibu' => $orangTua->nama_ibu,
+                'tanggal_lahir_ayah' => $orangTua->tanggal_lahir_ayah,
+                'tanggal_lahir_ibu' => $orangTua->tanggal_lahir_ibu,
+                'pekerjaan_ayah' => $orangTua->pekerjaan_ayah,
+                'pekerjaan_ibu' => $orangTua->pekerjaan_ibu,
+                'pendidikan_ayah' => $orangTua->pendidikan_ayah,
+                'pendidikan_ibu' => $orangTua->pendidikan_ibu,
+                'alamat' => $orangTua->alamat,
+                'no_telp' => $orangTua->no_telp,
+            ]);
+
+            return redirect()->intended('/orangtua/dashboard')->with('success', 'Login berhasil sebagai Orang Tua');
         }
 
         return back()->withErrors([

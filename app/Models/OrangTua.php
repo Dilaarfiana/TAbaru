@@ -78,13 +78,5 @@ class OrangTua extends Model
         return $this->tanggal_lahir_ibu ? date('d-m-Y', strtotime($this->tanggal_lahir_ibu)) : '';
     }
     
-    /**
-     * Set password attribute with automatic hashing.
-     */
-    public function setPasswordAttribute($value)
-    {
-        if (!empty($value)) {
-            $this->attributes['password'] = bcrypt($value);
-        }
-    }
+    
 }

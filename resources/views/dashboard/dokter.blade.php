@@ -252,7 +252,6 @@
                                 <th class="text-left px-4 py-3 text-gray-600 text-sm font-semibold">Nama Siswa</th>
                                 <th class="text-left px-4 py-3 text-gray-600 text-sm font-semibold">Keluhan</th>
                                 <th class="text-left px-4 py-3 text-gray-600 text-sm font-semibold">Dokter</th>
-                                <th class="text-right px-4 py-3 text-gray-600 text-sm font-semibold">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -291,12 +290,7 @@
                                         <span class="font-medium text-gray-900">{{ $rekam->dokter->Nama_Dokter ?? 'Tidak diketahui' }}</span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-4 text-right">
-                                    <a href="{{ route('dokter.rekam_medis.show', $rekam->No_Rekam_Medis) }}" class="inline-flex items-center text-green-600 hover:text-green-800 font-medium text-sm transition-colors duration-200">
-                                        <i class="fas fa-eye mr-1"></i>
-                                        Review
-                                    </a>
-                                </td>
+
                             </tr>
                             @empty
                             <tr>
