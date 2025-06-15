@@ -54,15 +54,15 @@ class KelasController extends Controller
         $validator = Validator::make($request->all(), [
             'Kode_Kelas' => 'required|string|max:5|unique:Kelas,Kode_Kelas',
             'Nama_Kelas' => 'required|string|max:30', // Hapus unique validation untuk fleksibilitas
-            'Kode_Jurusan' => 'required|exists:Jurusan,Kode_Jurusan',
+            'Kode_Jurusan' => 'required|exists:jurusan,Kode_Jurusan',
             'Tahun_Ajaran' => 'nullable|string|max:10',
         ], [
             'Kode_Kelas.required' => 'Kode kelas harus diisi.',
             'Kode_Kelas.unique' => 'Kode kelas sudah ada.',
             'Nama_Kelas.required' => 'Nama kelas harus diisi.',
             'Nama_Kelas.max' => 'Nama kelas maksimal 30 karakter.',
-            'Kode_Jurusan.required' => 'Jurusan harus dipilih.',
-            'Kode_Jurusan.exists' => 'Jurusan yang dipilih tidak valid.',
+            'Kode_Kelas' => 'required|string|max:5|unique:kelas,Kode_Kelas',
+            'Kode_Jurusan' => 'required|exists:jurusan,Kode_Jurusan',
             'Tahun_Ajaran.max' => 'Tahun ajaran maksimal 10 karakter.',
         ]);
 
@@ -135,7 +135,7 @@ class KelasController extends Controller
         $validator = Validator::make($request->all(), [
             'Nama_Kelas' => 'required|string|max:30',
             'Tahun_Ajaran' => 'nullable|string|max:10',
-            'Kode_Jurusan' => 'required|exists:Jurusan,Kode_Jurusan',
+            'Kode_Jurusan' => 'required|exists:jurusan,Kode_Jurusan',
             'Jumlah_Siswa' => 'nullable|integer|min:0',
         ], [
             'Nama_Kelas.required' => 'Nama kelas harus diisi.',
