@@ -52,7 +52,7 @@ class KelasController extends Controller
         }
         
         $validator = Validator::make($request->all(), [
-            'Kode_Kelas' => 'required|string|max:5|unique:Kelas,Kode_Kelas',
+            'Kode_Kelas' => 'required|string|max:5|unique:kelas,Kode_Kelas',
             'Nama_Kelas' => 'required|string|max:30', // Hapus unique validation untuk fleksibilitas
             'Kode_Jurusan' => 'required|exists:jurusan,Kode_Jurusan',
             'Tahun_Ajaran' => 'nullable|string|max:10',
