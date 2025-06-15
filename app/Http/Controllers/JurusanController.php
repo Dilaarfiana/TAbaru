@@ -16,7 +16,7 @@ class JurusanController extends Controller
     public function index()
     {
         // Load relationships untuk menghindari N+1 query problem
-        $jurusan = jurusan::with(['kelas', 'siswa'])->orderBy('Kode_Jurusan')->get();
+        $jurusan = Jurusan::with(['kelas', 'siswa'])->orderBy('Kode_Jurusan')->get();
         
         return view('jurusan.index', compact('jurusan'));
     }
@@ -42,13 +42,13 @@ class JurusanController extends Controller
             $request->merge(['Kode_Jurusan' => $nextId]);
         }
         
-        $validator = Validator::make($request->all(), [
-            'Kode_Jurusan' => 'required|string|size:1|unique:Jurusan,Kode_Jurusan|regex:/^[A-Z]$/',
-            'Nama_Jurusan' => 'required|string|max:30|unique:Jurusan,Nama_Jurusan',
-        ], [
-            'Kode_Jurusan.regex' => 'Kode jurusan harus berupa huruf kapital A-Z',
-            'Kode_Jurusan.size' => 'Kode jurusan harus 1 karakter',
-        ]);
+            $validator = Validator::make($request->all(), [
+                'Kode_Jurusan' => 'required|string|size:1|unique:jurusan,Kode_Jurusan|regex:/^[A-Z]$/',
+                'Nama_Jurusan' => 'required|string|max:30|unique:jurusan,Nama_Jurusan',
+            ], [
+                'Kode_Jurusan.regex' => 'Kode jurusan harus berupa huruf kapital A-Z',
+                'Kode_Jurusan.size' => 'Kode jurusan harus 1 karakter',
+            ]);
 
         if ($validator->fails()) {
             return redirect()->route('jurusan.create')
@@ -120,8 +120,9 @@ class JurusanController extends Controller
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
-            'Nama_Jurusan' => 'required|string|max:30|unique:Jurusan,Nama_Jurusan,'.$id.',Kode_Jurusan',
+            'Nama_Jurusan' => 'required|string|max:30|unique:jurusan,Nama_Jurusan,'.$id.',Kode_Jurusan',
         ]);
+
 
         if ($validator->fails()) {
             return redirect()->route('jurusan.edit', $id)
