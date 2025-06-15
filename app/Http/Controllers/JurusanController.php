@@ -16,7 +16,7 @@ class JurusanController extends Controller
     public function index()
     {
         // Load relationships untuk menghindari N+1 query problem
-        $jurusan = Jurusan::with(['kelas', 'siswa'])->orderBy('Kode_Jurusan')->get();
+        $jurusan = jurusan::with(['kelas', 'siswa'])->orderBy('Kode_Jurusan')->get();
         
         return view('jurusan.index', compact('jurusan'));
     }
