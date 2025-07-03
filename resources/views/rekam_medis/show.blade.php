@@ -183,52 +183,6 @@
             </div>
             @endif
 
-            <!-- Info Banner -->
-            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg mb-6">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-file-medical text-green-500"></i>
-                    </div>
-                    <div class="ml-3 w-full">
-                        <h3 class="text-md font-medium text-green-800 mb-1">Informasi Rekam Medis</h3>
-                        <p class="text-sm text-green-700 mb-2">
-                            Menampilkan detail lengkap rekam medis siswa termasuk riwayat pemeriksaan yang pernah dilakukan.
-                        </p>
-                        
-                        <!-- Metadata Info -->
-                        <div class="mt-2 p-2 bg-green-100 border border-green-300 rounded text-xs">
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                <div>
-                                    <span class="font-medium text-green-800">Dibuat:</span>
-                                    <span class="text-green-700">{{ \Carbon\Carbon::parse($rekamMedis->created_at)->format('d/m/Y H:i') }}</span>
-                                </div>
-                                <div>
-                                    <span class="font-medium text-green-800">Diperbarui:</span>
-                                    <span class="text-green-700">{{ \Carbon\Carbon::parse($rekamMedis->updated_at)->format('d/m/Y H:i') }}</span>
-                                </div>
-                                <div>
-                                    <span class="font-medium text-green-800">Status:</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i>Aktif
-                                    </span>
-                                </div>
-                                <div>
-                                    <span class="font-medium text-green-800">Akses Anda:</span>
-                                    <span class="text-green-700">
-                                        @if($isAdmin)
-                                            Administrator (Full CRUD)
-                                        @elseif($isPetugas)
-                                            Petugas UKS (CRU)
-                                        @elseif($isDokter)
-                                            Dokter (Read Only)
-                                        @endif
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Grid Informasi Utama -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">

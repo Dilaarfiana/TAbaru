@@ -538,7 +538,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dateTimeInput) {
         const today = new Date();
         const formattedDate = today.toISOString().slice(0, 16);
-        dateTimeInput.max = formattedDate;
         
         // Update time preview
         dateTimeInput.addEventListener('change', updateTimePreview);
